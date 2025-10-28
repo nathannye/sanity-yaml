@@ -1,40 +1,10 @@
-# Example
-
-```yaml
-expedition region
-name: 
-	type: string
-	description: stuff
-points: string[]
-ponts2: {
-	- title: string
-	- name: number
-}[]
-- points3: array(string)
-
-expedition
-- title: string
-- date: date
-- region: ->expedition-region
-- description: text
-- slug: PrefixedSlug
-- thing: ->place-mcgee[]
-
-thing
-- stuff: {
-	- lastname: string
-	- firstname: string
-}[]
-```
-
-
 
 
 # What is this
 A bulk Sanity.io schema and file generator. Write your schemas (images, arrays, objects, whatecer you want) in yaml with basic validation rules and print them to files for your frontend and CMS.
 
 <strong>Why</strong>
-I got tired of writing all my Sanity schmeas by hand. Tons of objects and validation parameters, a few hours of work every time to get right, THEN I had to go make frontend files and type them accordingly. Heavily inspired by (plopjs)[https://www.npmjs.com/package/plop] and built specifically to generate Typesafe frontend files and schemas.
+One of the first steps tp building a new CMS-driven site is creating the schemas/sections and matching frontend components. It's not fast work. So to save myself some time I made this, much faster to write a yaml-ish syntax and generate proper schemas and files than to type it all by hand, or leave it up to interpretation by your model of choice
 
 
 # Syntax
@@ -84,4 +54,33 @@ A number `\d+` after the field name and before the colon, marks a field as needi
 ```yaml
 SliceName
   fieldName4: string
+```
+
+# Example
+
+```yaml
+expedition region
+name: 
+	type: string
+	description: stuff
+points: string[]
+ponts2: {
+	- title: string
+	- name: number
+}[]
+- points3: array(string)
+
+expedition
+- title: string
+- date: date
+- region: ->expedition-region
+- description: text
+- slug: PrefixedSlug
+- thing: ->place-mcgee[]
+
+thing
+- stuff: {
+	- lastname: string
+	- firstname: string
+}[]
 ```
