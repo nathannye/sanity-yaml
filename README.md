@@ -1,10 +1,13 @@
 
+> 🚨 This library is under active development, syntax is up for grabs at the moment but the premise will remain the same. I highly recommend not installing this while I work out the kinks
 
 # What is this
 A bulk Sanity.io schema and file generator. Write your schemas (images, arrays, objects, whatecer you want) in yaml with basic validation rules and print them to files for your frontend and CMS.
 
-<strong>Why</strong>
-One of the first steps tp building a new CMS-driven site is creating the schemas/sections and matching frontend components. It's not fast work. So to save myself some time I made this, much faster to write a yaml-ish syntax and generate proper schemas and files than to type it all by hand, or leave it up to interpretation by your model of choice
+# Why
+One of the first steps to building a new CMS-driven site is creating the schemas/sections and the matching frontend components. It's not fast work, for me it's 90m to an hour at least, every time. So to save myself some time I made this, much faster to write a yaml-ish syntax and generate proper schemas and files than to type it all by hand, or leave it up to interpretation by your model of choice
+
+Highly inspired by [plop.js](https://www.npmjs.com/package/plop)
 
 
 # Syntax
