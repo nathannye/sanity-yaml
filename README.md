@@ -2,18 +2,60 @@
 > 🚨 This library is under active development, breaking changes are to be expected while I figure out the best way to use this.
 
 # What is this
-A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatever you want) in yaml with basic validation rules and print them to files using handlebars templates. like this:
+A bulk Sanity.io schema and component generator. Write your schemas like this: 
 
 ```yaml 
 
 heroSection:
-  title!4: string
+  title!40: string
   subtitle: text
   image[]: image
   tags: string(option1, option2, options3)
   ctaLink: string
-
 ```
+
+And generate this: 
+
+```ts
+export default {
+  name: 'heroSection',
+  title: 'Hero Section',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      type: 'string',
+      validation: (Rule: any) => Rule.max(40).required()
+    }),
+    defineField({
+      name: 'subtitle',
+      type: 'text',
+      options: {
+        rows: 3
+      }
+    }),
+    defineField({
+      name: 'image',
+      type: 'array',
+      of: [
+        { type: 'image' }
+      ]
+    }),
+    defineField({
+      name: 'tags',
+      type: 'string',
+      options: {
+        list: ['option1', 'option2', 'options3']
+      }
+    }),
+    defineField({
+      name: 'ctaLink',
+      type: 'string'
+    })
+  ]
+};
+```
+
 
 **Why does it exist?**
 <br/>
@@ -167,7 +209,7 @@ export default {
 };
 ```
 
-> 💡 When `removeDefineField: true` is set in your config, fields will be generated as plain objects instead of `defineField()` calls. You can conditionally import `defineField` in your template using the `shouldRemoveDefineField` helper.
+> 💡 When `removeDefineField: true` is set in your config, fields will be generated as plain objects instead of `defineField()` calls.
 > 🧠 The component-props will give your linter a heart attack if you have unused-arguments enabled. Use this only if you are okay having a bunch of unused props in each file.
 **`templates/component.hbs`** - Generates JSX component:
 ```handlebars
