@@ -1,5 +1,5 @@
-import { EXTENSION_TO_MIME } from "./mime-types";
 import type { FieldHandlerParams, ProcessedGenericField } from "~/types";
+import { EXTENSION_TO_MIME } from "./mime-types";
 
 export interface ProcessedFileField extends ProcessedGenericField {
 	options?: {

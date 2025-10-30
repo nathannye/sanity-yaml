@@ -6,9 +6,9 @@
  */
 
 import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
 import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,7 +42,10 @@ if (existsSync(builtCliPath)) {
 const child = spawn(tsxCmd, [...tsxArgs, cliPath, ...process.argv.slice(2)], {
 	stdio: "inherit",
 	shell: true,
-	env: { ...process.env, PATH: `${process.env.PATH}:${resolve(__dirname, "../node_modules/.bin")}` },
+	env: {
+		...process.env,
+		PATH: `${process.env.PATH}:${resolve(__dirname, "../node_modules/.bin")}`,
+	},
 });
 
 child.on("exit", (code) => {
@@ -54,4 +57,3 @@ child.on("error", (error) => {
 	console.error("   Please ensure Node.js and npm/pnpm are installed");
 	process.exit(1);
 });
-

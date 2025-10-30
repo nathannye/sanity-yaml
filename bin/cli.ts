@@ -131,6 +131,9 @@ Examples:
 				name,
 				inputPath: fileset.inputPath,
 				onFileCreate: fileset.onFileCreate,
+				config: config.fieldDefaults
+					? { fieldDefaults: config.fieldDefaults }
+					: undefined,
 			});
 		});
 

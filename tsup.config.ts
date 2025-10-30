@@ -24,8 +24,8 @@ export default defineConfig({
 		"yaml",
 	],
 	onSuccess: async () => {
-		const { copyFileSync, mkdirSync, cpSync } = await import("fs");
-		const { resolve } = await import("path");
+		const { copyFileSync, mkdirSync, cpSync } = await import("node:fs");
+		const { resolve } = await import("node:path");
 		// Copy bin/cli.js
 		mkdirSync(resolve("dist", "bin"), { recursive: true });
 		copyFileSync("bin/cli.js", "dist/bin/cli.js");

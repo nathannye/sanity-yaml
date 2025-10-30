@@ -1,7 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import Handlebars from "handlebars";
-import { pascalCase } from "text-case";
+import {
+	camelCase,
+	kebabCase,
+	pascalCase,
+	sentenceCase,
+	snakeCase,
+	titleCase,
+} from "text-case";
 import { resolveFrom } from "./paths";
 
 export const registerPartials = (directory: string) => {
@@ -18,7 +25,7 @@ export const registerPartials = (directory: string) => {
 		}
 
 		// Only process .hbs files
-		if (!file.endsWith('.hbs')) {
+		if (!file.endsWith(".hbs")) {
 			continue;
 		}
 
@@ -33,7 +40,15 @@ export const registerHelpers = () => {
 	Handlebars.registerHelper("hasFields", (fields) => {
 		return Array.isArray(fields) && fields.length > 0;
 	});
+
+	// Casing utilities - most commonly used
 	Handlebars.registerHelper("pascalCase", pascalCase);
+	Handlebars.registerHelper("camelCase", camelCase);
+	Handlebars.registerHelper("kebabCase", kebabCase);
+	Handlebars.registerHelper("titleCase", titleCase);
+	Handlebars.registerHelper("sentenceCase", sentenceCase);
+	Handlebars.registerHelper("snakeCase", snakeCase);
+
 	Handlebars.registerHelper("or", (...fnargs) => {
 		// convert `arguments` into a normal array and remove the last item (Handlebars options object)
 		const args = Array.from(fnargs).slice(0, -1);
@@ -68,7 +83,7 @@ export const registerHelpers = () => {
 		"default",
 		function (
 			this: Record<string, unknown>,
-			value: unknown,
+			// value: unknown,
 			options: Handlebars.HelperOptions,
 		) {
 			if (this.switch_break === false) {

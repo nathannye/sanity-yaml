@@ -10,6 +10,137 @@ One of the first steps to building a new CMS-driven site is creating the schemas
 Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely incredible library for one-off file generation.
 
 
+# Getting Started
+
+## Project Structure
+
+Create the following files in your project:
+
+```
+your-project/
+├── sanity-yaml.config.ts    # Configuration file
+├── schemas.yaml              # Your schema definitions
+└── templates/                # Your Handlebars templates
+    ├── schema.hbs
+    └── component.hbs
+```
+
+## Configuration File
+
+Create a `sanity-yaml.config.ts` or `sanity-yaml.config.js` file in your project root:
+
+```typescript
+import type { GeneratorConfig } from "sanity-yaml";
+
+const config: GeneratorConfig = {
+  // Optional: Set default field options, only text is supported at curent
+  fieldDefaults: {
+    text: {
+      rows: 4, // Default rows for text fields
+    },
+  },
+
+  // Required: Define your filesets
+  filesets: {
+    // Each fileset generates files for schemas in a YAML file
+    slices: {
+      inputPath: "./schemas.yaml",
+      onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate }) => {
+        // Generate Sanity schema file
+        await renderTemplate({
+          template: "./templates/schema.hbs",
+          data: { name, sanityFields },
+          outputPath: `./generated/schemas/${name}.ts`,
+        });
+
+        // Generate React component file
+        await renderTemplate({
+          template: "./templates/component.hbs",
+          data: { name, typeDefinition },
+          outputPath: `./generated/components/${name}.tsx`,
+        });
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+## YAML Schema File
+
+Create a YAML file (e.g., `schemas.yaml`) with your schema definitions:
+
+```yaml
+heroSection:
+  title!: string
+  subtitle: text
+  image: image
+  ctaText: string
+  ctaLink: string
+
+blogPost:
+  title!: string
+  slug!: slug(title)
+  publishedDate!: datetime
+  author: ->author
+  content: text
+  tags[]: string
+  featuredImage: image
+```
+
+## Handlebars Templates
+
+Create template files (`.hbs`) that use Handlebars syntax:
+
+**`templates/schema.hbs`** - Generates Sanity schema:
+```handlebars
+import { defineField } from "sanity";
+
+export default {
+  name: '{{name}}',
+  title: '{{titleCase name}}',
+  type: 'object',
+  fields: [
+    {{> sanity-fields fields=sanityFields}}
+  ],
+};
+```
+
+**`templates/component.hbs`** - Generates React component:
+```handlebars
+interface {{pascalCase name}}Props {
+{{> jsx-types typeDefinition=typeDefinition}}
+}
+
+const {{pascalCase name}} = ({ {{> component-props typeDefinition=typeDefinition}} }: {{pascalCase name}}Props) => {
+  return (
+    <section>
+      <h1>{{titleCase name}}</h1>
+    </section>
+  );
+};
+
+export default {{pascalCase name}};
+```
+
+## Running
+
+After setting up your config and YAML files:
+
+```bash
+# Using pnpm
+pnpm sanity-yaml
+
+# Using npm
+npm sanity-yaml
+
+# With custom config path
+pnpm sanity-yaml --config ./my-config.ts
+```
+
+---
+
 # How it works: Syntax
 To get started, write up a `.yaml file` using the syntax described below.
 
@@ -40,22 +171,23 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 
 ## Supported Field Types
 
-| Sanity Field Type | Basic Syntax             | Description                                   | Advanced Syntax Example                |
-|:------------------|:-----------------------------|:-----------------------------------------------|:---------------------------------------|
-| `array`           | `tags[]: {fieldName}`        | Array of any field type                        | Can be used with any field type        |
-| `boolean`         | `isActive: boolean`          | `true`/`false` value                           |                                         |
-| `date`            | `eventDate: date`            | ISO-format date string                         |                                         |
-| `datetime`        | `publishedDate: datetime`    | ISO-format date/time string                    |                                         |
-| `email`           | `contact: email`             | String field with added email validation rule  |                                         |
-| `file`            | `annualReport: file`         | File upload field                              | Format requirements: `annualReports: file(pdf,docx)`  |
-| `geopoint`        | `location: geopoint`         | Point with lat/lng/alt                         |                                         |
-| `image`           | `thumbnail: image`           | Sanity image field                             |                                         |
-| `number`          | `count: number`              | Numeric value (integer or float)               |                                         |
-| `object`          | ``` stuff: -field: type - thing:type ```| Nested fields as an object          |                                         |
-| `reference`       | `author: ->author`           | Reference (relation) to another document       | `category: ->category[]` (array of refs)|
-| `reference array` | `clothing[]: ->(shirts,pants)` | Reference (relation) to another document     |                                         |
-| `string`          | `name: string`               | Plain text string                              | List options: `status: string(active, inactive)`     |
-| `text`            | `description: text`       | Plain text with multiple lines                    | Row amount: `desctipion: text(4)`       |
+| Sanity Field Type | Basic Syntax                        | Description                                   | Advanced Syntax Example                |
+|:------------------|:------------------------------------|:-----------------------------------------------|:---------------------------------------|
+| `array`           | `tags[]: {fieldName}`               | Array of any field type                        | Can be used with any field type        |
+| `boolean`         | `isActive: boolean`                 | `true`/`false` value                           |                                        |
+| `date`            | `eventDate: date`                   | ISO-format date string                         |                                        |
+| `datetime`        | `publishedDate: datetime`           | ISO-format date/time string                    |                                        |
+| `email`           | `contact: email`                    | String field with added email validation rule  |                                        |
+| `file`            | `annualReport: file`                | File upload field                              | Format requirements: `annualReports: file(pdf,docx)` |
+| `geopoint`        | `location: geopoint`                | Point with lat/lng/alt                         |                                        |
+| `image`           | `thumbnail: image`                  | Sanity image field                             |                                        |
+| `number`          | `count: number`                     | Numeric value (integer or float)               |                                        |
+| `object`          | ``` stuff: -field: type - thing:type ``` | Nested fields as an object                   |                                        |
+| `reference`       | `author: ->author`                  | Reference (relation) to another document       | `category: ->category[]` (array of refs)|
+| `reference array` | `clothing[]: ->(shirts,pants)`      | Reference (relation) to another document       |                                        |
+| `slug`            | `slug: slug`                        | Slug field automatically generated from a source | Use another field as source: `slug: slug(title)` |
+| `string`          | `name: string`                      | Plain text string                              | List options: `status: string(active, inactive)`  |
+| `text`            | `description: text`                 | Plain text with multiple lines                 | Row amount: `description: text(4)`     |
 
 
 > 📝 A note on arrays: They can be mixed with ANY type. image[], number[], whatever you want.
@@ -108,8 +240,46 @@ thing
 }[]
 ```
 
-# How it works: Template partials
-Handlebars is used as the template engine to generate files. 3 partials are exposed for use in your templates. Each partial requires specific property names:
+# How it works: Templates
+
+Handlebars is used as the template engine to generate files. You have access to several built-in helpers and partials.
+
+## Available Data
+
+Each template receives the following data:
+- `name` - The schema name (e.g., "heroSection")
+- `title` - Title case version of the name (e.g., "Hero Section")
+- `sanityFields` - Array of processed Sanity field definitions
+- `typeDefinition` - TypeScript type definitions as an object
+
+## Handlebars Helpers
+
+### Casing Utilities
+
+The following casing helpers are available for transforming the `name` or any string:
+
+- `{{pascalCase name}}` - `heroSection` → `HeroSection`
+- `{{camelCase name}}` - `hero-section` → `heroSection`
+- `{{kebabCase name}}` - `heroSection` → `hero-section`
+- `{{titleCase name}}` - `hero section` → `Hero Section`
+- `{{sentenceCase name}}` - `hero section` → `Hero section`
+- `{{snakeCase name}}` - `heroSection` → `hero_section`
+
+**Example:**
+```handlebars
+<!-- Component name -->
+const {{pascalCase name}} = ...
+
+<!-- File name -->
+export * from './{{kebabCase name}}'
+
+<!-- Display name -->
+<h1>{{titleCase name}}</h1>
+```
+
+## Template Partials
+
+Three partials are exposed for use in your templates. Each partial requires specific property names:
 
 ## `component-props`
 Generates component props destructuring for React components.

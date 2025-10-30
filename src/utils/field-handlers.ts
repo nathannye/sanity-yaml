@@ -9,7 +9,11 @@ import {
 } from "~/fields";
 import { handleFileField } from "~/fields/file";
 import { fieldToTypeDefinition } from "~/typegen";
-import type { FieldHandlerParams, FieldHandlerReturn, ProcessedGenericField } from "~/types";
+import type {
+	FieldHandlerParams,
+	FieldHandlerReturn,
+	ProcessedGenericField,
+} from "~/types";
 import { parseValidationRules } from "~/validation";
 
 const GENERIC_FIELD_TYPES = [
@@ -35,23 +39,27 @@ export const SUPPORTED_FIELD_TYPES = [
 
 // Using Record with any for handlers to allow flexible return types
 // Handlers return ProcessedGenericField variants which are later wrapped with _PARAMS
-const FIELD_HANDLERS: Record<string, (params: FieldHandlerParams) => unknown> = {
-	string: handleStringField,
-	object: handleObjectField,
-	array: handleArrayField,
-	email: handleStringField,
-	text: handleTextField,
-	slug: handleSlugField,
-	reference: handleReferenceField,
-	file: handleFileField,
-	...GENERIC_FIELD_TYPES.reduce<Record<string, typeof handleGeneric>>(
-		(acc, type) => {
-			acc[type] = handleGeneric;
-			return acc;
-		},
-		{},
-	),
-} as Record<string, (params: FieldHandlerParams) => ProcessedGenericField | undefined>;
+const FIELD_HANDLERS: Record<string, (params: FieldHandlerParams) => unknown> =
+	{
+		string: handleStringField,
+		object: handleObjectField,
+		array: handleArrayField,
+		email: handleStringField,
+		text: handleTextField,
+		slug: handleSlugField,
+		reference: handleReferenceField,
+		file: handleFileField,
+		...GENERIC_FIELD_TYPES.reduce<Record<string, typeof handleGeneric>>(
+			(acc, type) => {
+				acc[type] = handleGeneric;
+				return acc;
+			},
+			{},
+		),
+	} as Record<
+		string,
+		(params: FieldHandlerParams) => ProcessedGenericField | undefined
+	>;
 
 const parseFieldData = (name: string | null, type: unknown) => {
 	const options = typeof type === "string" ? type.match(/\((.*)\)/)?.[1] : null;
@@ -156,8 +164,7 @@ export const handleField = (
 	const { _type, dataSignature, options } = parseFieldData(name, type);
 	const { validation, cleanedFieldName } = parseValidationRules(name, type);
 
-	const fn =
-		typeof _type === "string" ? FIELD_HANDLERS[_type] : undefined;
+	const fn = typeof _type === "string" ? FIELD_HANDLERS[_type] : undefined;
 
 	if (typeof fn !== "function") {
 		console.log("🚨 No field handler or declared type found for type: ", type);

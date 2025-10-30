@@ -10,7 +10,11 @@ export const handleObjectField = ({
 	dataSignature,
 }: FieldHandlerParams): ProcessedObjectField => {
 	// Ensure dataSignature is an object
-	if (typeof dataSignature !== "object" || dataSignature === null || Array.isArray(dataSignature)) {
+	if (
+		typeof dataSignature !== "object" ||
+		dataSignature === null ||
+		Array.isArray(dataSignature)
+	) {
 		return {
 			name: name === "array" ? undefined : name,
 			type: "object",

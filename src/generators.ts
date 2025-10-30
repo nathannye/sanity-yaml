@@ -2,7 +2,6 @@
 
 import fs from "node:fs";
 import process from "node:process";
-// import { resolveFrom } from "~/utils/file";
 import { confirm } from "@inquirer/prompts";
 import { titleCase } from "text-case";
 import { WalkBuilder, walk } from "walkjs";
@@ -12,12 +11,10 @@ import { fieldToTypeDefinition } from "./typegen/typescript-handlers";
 import type {
 	FieldHandlerReturn,
 	FileCreatorCallbackArgs,
-	FilesetDataOutput,
 	TypeDefinition,
 	WalkNodeValue,
 } from "./types";
-import { renderTemplate, updateFile } from "./utils/exposed";
-import { renderToFile } from "./utils/render";
+import { modifyFile, renderTemplate } from "./utils/exposed";
 
 const extractFieldTypeFromValue = (
 	name: string | null,
@@ -336,11 +333,24 @@ export const generateFileset = async ({
 	name,
 	inputPath,
 	onFileCreate,
+	config,
 }: {
 	name: string;
 	inputPath: string;
 	onFileCreate: (args: FileCreatorCallbackArgs) => void | Promise<void>;
+	config?: {
+		fieldDefaults?: {
+			text?: {
+				rows?: number;
+			};
+		};
+	};
 }) => {
+	// Set library config if provided
+	if (config) {
+		const { setLibraryConfig } = await import("./utils/config");
+		setLibraryConfig(config);
+	}
 	const parsedYaml = yaml.parse(fs.readFileSync(inputPath, "utf8"));
 
 	// Scan for unsupported field types before processing
@@ -412,7 +422,7 @@ export const generateFileset = async ({
 				sanityFields: file.sanityFields,
 				typeDefinition: file.typeDefinition,
 				renderTemplate,
-				updateFile,
+				modifyFile,
 			});
 			await result; // Resolve promise if it's async, otherwise await undefined
 		}),

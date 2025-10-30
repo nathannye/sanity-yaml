@@ -30,6 +30,7 @@ export type TemplateData = {
 	name: string;
 	sanityFields: FieldHandlerReturn[];
 	typeDefinition: Record<string, string>;
+	[key: string]: unknown;
 };
 
 export type FieldHandlerParams = {
@@ -63,14 +64,15 @@ export type FileCreatorCallbackArgs = {
 	typeDefinition: Record<string, TypeDefinition>;
 	renderTemplate: (args: {
 		template: string;
-		data: Record<string, unknown>;
+		data: TemplateData;
 		outputPath: string;
 	}) => Promise<void>;
-	updateFile: (
-		filepath: string,
-		regex: string | undefined,
-		content: string | undefined,
-	) => Promise<void>;
+	modifyFile: (args: {
+		template: string;
+		data: TemplateData;
+		targetFile: string;
+		regex?: string;
+	}) => Promise<void>;
 };
 
 // Expandable type for walk node values
@@ -85,3 +87,24 @@ export interface WalkNodeValue {
 	of?: FieldHandlerReturn[];
 	[key: string]: unknown;
 }
+
+/**
+ * Generator configuration type for user config files
+ * This defines the structure expected in sanity-yaml.config.ts/js files
+ */
+export type GeneratorConfig = {
+	fieldDefaults?: {
+		text?: {
+			rows?: number;
+		};
+	};
+	additionalTypes?: {
+		[key: string]: string;
+	};
+	filesets: {
+		[name: string]: {
+			inputPath: string;
+			onFileCreate: (args: FileCreatorCallbackArgs) => void | Promise<void>;
+		};
+	};
+};

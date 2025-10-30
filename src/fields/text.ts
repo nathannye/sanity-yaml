@@ -1,8 +1,9 @@
 import type { FieldHandlerParams } from "~/types";
-import { CONFIG } from "../../config";
+import { getLibraryConfig } from "~/utils/config";
 
 export const handleTextField = ({ name, options }: FieldHandlerParams) => {
-	const rows = options || CONFIG.fieldDefaults?.text?.rows;
+	const config = getLibraryConfig();
+	const rows = options || config.fieldDefaults?.text?.rows;
 
 	return {
 		name,

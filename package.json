@@ -1,57 +1,61 @@
 {
-  "name": "sanity-yaml",
-  "version": "0.1.0",
-  "description": "A bulk Sanity.io schema and component generator from YAML",
-  "type": "module",
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
-    }
-  },
-  "bin": {
-    "sanity-yaml": "./bin/cli.js"
-  },
-  "files": [
-    "dist",
-    "bin",
-    "templates",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "generate": "bun run index.ts",
-    "prepare": "husky"
-  },
-  "keywords": [
-    "sanity",
-    "sanity-io",
-    "yaml",
-    "schema",
-    "generator",
-    "cms"
-  ],
-  "author": "",
-  "license": "MIT",
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "@inquirer/prompts": "^7.9.0",
-    "@sanity/types": "^4.10.3",
-    "@types/bun": "latest",
-    "handlebars": "^4.7.8",
-    "text-case": "^1.2.9",
-    "walkjs": "^6.0.1",
-    "yaml": "^2.8.1"
-  },
-  "devDependencies": {
-    "husky": "^9.1.7",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.6"
-  }
+	"name": "sanity-yaml",
+	"version": "0.1.0",
+	"author": "Nathan Nye <nathan@nye.design> www.nye.deisgn",
+	"description": "A bulk Sanity.io schema and component generator from YAML",
+	"type": "module",
+	"main": "./dist/src/index.js",
+	"module": "./dist/src/index.js",
+	"types": "./dist/src/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/src/index.js",
+			"types": "./dist/src/index.d.ts"
+		}
+	},
+	"bin": {
+		"sanity-yaml": "./bin/cli.js"
+	},
+	"files": [
+		"dist",
+		"bin",
+		"templates",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"generate": "bun run index.ts",
+		"prepare": "husky",
+		"prepublishOnly": "pnpm build",
+		"format": "pnpm exec biome format --write",
+		"lint": "biome check --write"
+	},
+	"keywords": [
+		"sanity",
+		"sanity-io",
+		"yaml",
+		"schema",
+		"generator",
+		"cms"
+	],
+	"license": "MIT",
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@inquirer/prompts": "^7.9.0",
+		"@sanity/types": "^4.10.3",
+		"@types/bun": "latest",
+		"handlebars": "^4.7.8",
+		"text-case": "^1.2.9",
+		"walkjs": "^6.0.1",
+		"yaml": "^2.8.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.2",
+		"husky": "^9.1.7",
+		"tsup": "^8.5.0",
+		"tsx": "^4.20.6"
+	}
 }
