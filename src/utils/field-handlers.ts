@@ -23,6 +23,7 @@ const GENERIC_FIELD_TYPES = [
 	"boolean",
 	"geopoint",
 	"slug",
+	"url",
 ];
 
 export const SUPPORTED_FIELD_TYPES = [

@@ -124,7 +124,7 @@ export default {
 };
 ```
 
-**`templates/component.hbs`** - Generates React component:
+**`templates/component.hbs`** - Generates JSX component:
 ```handlebars
 interface {{pascalCase name}}Props {
 {{> jsx-types typeDefinition=typeDefinition}}
@@ -162,7 +162,7 @@ pnpm sanity-yaml --config ./my-config.ts
 To get started, write up a `.yaml file` using the syntax described below.
 
 ## Gotchas
-99% of the syntax is native yaml. But a few liberties were taken:
+99% of the syntax is native yaml. But the array syntax had some liberties taken to keep it closer to typescript:
 
 ### Arrays
 
@@ -209,10 +209,44 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 | `slug`            | `slug: slug`                        | Slug field automatically generated from a source | Use another field as source: `slug: slug(title)` |
 | `string`          | `name: string`                      | Plain text string                              | List options: `status: string(active, inactive)`  |
 | `text`            | `description: text`                 | Plain text with multiple lines                 | Row amount: `description: text(4)`     |
+| `url`             | `website: url`                     | URL field with validation                      |                                        |
 
 
 > 📝 A note on arrays: They can be mixed with ANY type. image[], number[], whatever you want.
 
+## Using Custom Sanity Types
+
+You can use any Sanity schema type that exists in your project, even if it's not in the supported types list above. Common examples include:
+- `portableText` - Sanity's rich text block content
+- `code` - Code blocks with syntax highlighting from a plugin
+- Any custom types you've defined in your Sanity schema
+
+When you use an unrecognized type:
+1. The generator will detect it and show a warning listing all unrecognized types
+2. You'll be prompted to confirm if you want to continue
+3. If you continue, these fields will be:
+   - Included in your Sanity schema files (using the type name as-is)
+   - Typed as `any` in your TypeScript type definitions
+
+**Example:**
+```yaml
+blogPost:
+  title!: string
+  content: portableText  # Custom Sanity type
+  codeBlock: code        # Another custom type
+```
+
+When you run the generator, you'll see:
+```
+⚠️  Unsupported field types detected:
+  blogPost: portableText, code
+
+Supported types: array, boolean, date, datetime, email, file, geopoint, image, number, object, reference, slug, string, text
+
+Continue with 2 unsupported types? (y/N)
+```
+
+After confirming, these fields will be generated with their Sanity types intact, but TypeScript will type them as `any`.
 
 ## Field Validation
 All field validation works together
