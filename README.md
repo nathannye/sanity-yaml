@@ -2,7 +2,18 @@
 > 🚨 This library is under active development, breaking changes are to be expected while I figure out the best way to use this.
 
 # What is this
-A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatever you want) in yaml with basic validation rules and print them to files using handlebars templates.
+A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatever you want) in yaml with basic validation rules and print them to files using handlebars templates. like this:
+
+```yaml 
+
+heroSection:
+  title!4: string
+  subtitle: text
+  image[]: image
+  tags: string(option1, option2, options3)
+  ctaLink: string
+
+```
 
 **Why does it exist?**
 <br/>
