@@ -4,10 +4,11 @@
 # What is this
 A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatever you want) in yaml with basic validation rules and print them to files using handlebars templates.
 
-# Why
-One of the first steps to building a new CMS-driven site is creating the schemas/sections and the matching frontend components. It's not fast work, for me it's 90m to an hour at least, every time. So to save myself some time I made this, much faster to write a yaml-ish syntax and generate proper schemas and files than to type it all by hand, or leave it up to interpretation by your model of choice
+**Why does it exist?**
+One of the first steps to building a new CMS-driven site is creating the schemas and the matching frontend components. It's not fast work, for me it's 90m to an hour every time I start a new project. I had originally used [plop.js](https://www.npmjs.com/package/plop), a phenomenal tool, Big up to Plop. But I still had to write length Sanity schemas and plop only makes one file at a time. So I wanted to save a bit more time and gen them all upfront.
 
-Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely incredible library for one-off file generation.
+
+> 👀 Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely incredible library for one-off file generation.
 
 
 # Getting Started
@@ -23,10 +24,6 @@ pnpm add sanity-yaml
 # Using npm
 npm install sanity-yaml
 ```
-
-**Requirements:**
-- Node.js 18+ 
-- TypeScript 5.0+ (for TypeScript config files)
 
 ## Project Structure
 
