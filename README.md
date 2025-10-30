@@ -59,7 +59,7 @@ const config: GeneratorConfig = {
   // Required: Define your filesets
   filesets: {
     // Each fileset generates files for schemas in a YAML file
-    slices: {
+    yourFilesetName: {
       inputPath: "./schemas.yaml",
       onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
         // Generate Sanity schema file
@@ -77,7 +77,7 @@ const config: GeneratorConfig = {
           outputPath: `./generated/components/${name}.tsx`,
         });
 
-        // Add import to index file using import template
+        // Add import to index file using import template 
         await modifyFile({
           template: "./templates/import.hbs",
           data: { name },
@@ -131,7 +131,7 @@ export default {
   ],
 };
 ```
-
+> 🧠 The component-props will give your linter a heart attack if you have unused-arguments enabled. Use this only if you are okay having a bunch of unused props in each file.
 **`templates/component.hbs`** - Generates JSX component:
 ```handlebars
 interface {{pascalCase name}}Props {
