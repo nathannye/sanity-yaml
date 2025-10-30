@@ -57,10 +57,6 @@ export const CONFIG: GeneratorConfig = {
 		},
 	},
 
-	typescript: {
-		// not sure what to call it but control if its an interface or a type
-	},
-
 	filesets: {
 		blogSchemas: {
 			inputPath: "./slices.yaml",

@@ -1,5 +1,6 @@
 mySlice:
   slug!: slug(title)
+  memes: tardigrade
   stuff:
     you: string
     them: string

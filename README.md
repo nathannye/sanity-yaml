@@ -14,29 +14,48 @@ Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely 
 To get started, write up a `.yaml file` using the syntax described below.
 
 ## Gotchas
-90% of the syntax is native yaml. But we don't have support for native yaml arrays. The `[]` was chosen over this for its similarity to typescript (LINK TO THIS) and removing the need for keys in arrays, as Sanity doesn't need them either.
+99% of the syntax is native yaml. But a few liberties were taken:
+
+### Arrays
+
+**Native YAML for arrays of key/value pairs**
+🚨 Do NOT use this, it is not supported
+```yaml
+arrayName:
+  - field1: string
+    field2: number
+```
+
+**Our syntax**
+We re-use the native object syntax and keep the array `[]` modifier used on other fields, ex: `string[]`.
+```yaml
+
+arrayName[]:
+	- field1: string
+	- field2: number
+```
 
 ## Basics
-The basic structure of schemas within YAML is key/value pairs. Keys are field names, and values are field types.
+The basic structure of schemas within YAML is key/value pairs. Keys are field names, and values are field types. Some fields support options with the () syntax.
 
 ## Supported Field Types
 
-| Sanity Field Type | Basic YAML Syntax             | Description                                   | Advanced Syntax Example                |
+| Sanity Field Type | Basic Syntax             | Description                                   | Advanced Syntax Example                |
 |:------------------|:-----------------------------|:-----------------------------------------------|:---------------------------------------|
-| `array`           | `tags[]: {fieldName}`        | Array of any field type                        |                                         |
+| `array`           | `tags[]: {fieldName}`        | Array of any field type                        | Can be used with any field type        |
 | `boolean`         | `isActive: boolean`          | `true`/`false` value                           |                                         |
 | `date`            | `eventDate: date`            | ISO-format date string                         |                                         |
 | `datetime`        | `publishedDate: datetime`    | ISO-format date/time string                    |                                         |
 | `email`           | `contact: email`             | String field with added email validation rule  |                                         |
-| `geopoint`        | `location: geopoint`         | Point with lat/lng                             |                                         |
+| `file`            | `annualReport: file`         | File upload field                              | Format requirements: `annualReports: file(pdf,docx)`  |
+| `geopoint`        | `location: geopoint`         | Point with lat/lng/alt                         |                                         |
 | `image`           | `thumbnail: image`           | Sanity image field                             |                                         |
 | `number`          | `count: number`              | Numeric value (integer or float)               |                                         |
-| `object`          | ``` stuff: -thing - thing ```| Nested fields as an object                     |                                         |
+| `object`          | ``` stuff: -field: type - thing:type ```| Nested fields as an object          |                                         |
 | `reference`       | `author: ->author`           | Reference (relation) to another document       | `category: ->category[]` (array of refs)|
-| `reference array` | `clothing[]: ->(shirts,pants)` | Reference (relation) to another document       | `category: ->category[]` (array of refs)|
-| `slug`            | `slug: slug`                 | Slug with optional soure parameter             |  `slug: slug(title)`                    |
-| `string`          | `name: string`               | Plain text string                              | `status: string(active, inactive)`      |
-| `text`            | `description: text(4)`       | Plain text with multiple lines                 |                                         |
+| `reference array` | `clothing[]: ->(shirts,pants)` | Reference (relation) to another document     |                                         |
+| `string`          | `name: string`               | Plain text string                              | List options: `status: string(active, inactive)`     |
+| `text`            | `description: text`       | Plain text with multiple lines                    | Row amount: `desctipion: text(4)`       |
 
 
 > 📝 A note on arrays: They can be mixed with ANY type. image[], number[], whatever you want.

@@ -43,17 +43,27 @@ export type ProcessedGenericField = {
 	name?: string;
 	type: SanityFieldType | string;
 	validation?: string;
+	// Array fields can have 'of' property
+	of?: FieldHandlerReturn[];
+	// Object fields can have 'fields' property
+	fields?: FieldHandlerReturn[];
+	// Allow any additional properties for extensibility
+	[key: string]: unknown;
 };
 
 export type FieldHandlerReturn = ProcessedGenericField & ExtraFieldParams;
 
+// Expandable type for type definitions - can be string or nested objects
+export type TypeDefinition = string | TypeDefinitionRecord;
+export interface TypeDefinitionRecord extends Record<string, TypeDefinition> {}
+
 export type FileCreatorCallbackArgs = {
 	name: string;
 	sanityFields: FieldHandlerReturn[];
-	typeDefinition: Record<string, string>;
+	typeDefinition: Record<string, TypeDefinition>;
 	renderTemplate: (args: {
 		template: string;
-		data: any;
+		data: Record<string, unknown>;
 		outputPath: string;
 	}) => Promise<void>;
 	updateFile: (
@@ -62,3 +72,16 @@ export type FileCreatorCallbackArgs = {
 		content: string | undefined,
 	) => Promise<void>;
 };
+
+// Expandable type for walk node values
+export interface WalkNodeValue {
+	name?: string;
+	type?: string;
+	_PARAMS?: {
+		type: string;
+		validation?: string;
+	};
+	fields?: FieldHandlerReturn[];
+	of?: FieldHandlerReturn[];
+	[key: string]: unknown;
+}

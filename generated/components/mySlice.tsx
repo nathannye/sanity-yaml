@@ -1,5 +1,3 @@
-import Slice from "~/components/Slice";
-
 interface MySliceProps {
 	stuff: {
 		you: string;
@@ -16,7 +14,7 @@ interface MySliceProps {
 	ref: any;
 	docs: any[];
 	description: string;
-	refArr: reference[];
+	refArr: any[];
 	contact: string;
 	count: number;
 	itemList: string;
@@ -39,11 +37,11 @@ const MySlice = ({
 	points,
 }: MySliceProps) => {
 	return (
-		<Slice>
+		<section>
 			<div className="h-screen w-full border-8 flex justify-center items-center">
 				<h2>Slice: mySlice</h2>
 			</div>
-		</Slice>
+		</section>
 	);
 };
 

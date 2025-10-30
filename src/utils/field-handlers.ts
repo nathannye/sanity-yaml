@@ -1,15 +1,15 @@
 import {
 	handleArrayField,
-	handleObjectField,
 	handleGeneric,
+	handleObjectField,
 	handleReferenceField,
+	handleSlugField,
 	handleStringField,
 	handleTextField,
-	handleSlugField,
 } from "~/fields";
 import { handleFileField } from "~/fields/file";
-import type { FieldHandlerReturn } from "~/types";
 import { fieldToTypeDefinition } from "~/typegen";
+import type { FieldHandlerParams, FieldHandlerReturn, ProcessedGenericField } from "~/types";
 import { parseValidationRules } from "~/validation";
 
 const GENERIC_FIELD_TYPES = [
@@ -21,7 +21,21 @@ const GENERIC_FIELD_TYPES = [
 	"slug",
 ];
 
-const FIELD_HANDLERS = {
+export const SUPPORTED_FIELD_TYPES = [
+	"string",
+	"object",
+	"array",
+	"email",
+	"text",
+	"slug",
+	"reference",
+	"file",
+	...GENERIC_FIELD_TYPES,
+];
+
+// Using Record with any for handlers to allow flexible return types
+// Handlers return ProcessedGenericField variants which are later wrapped with _PARAMS
+const FIELD_HANDLERS: Record<string, (params: FieldHandlerParams) => unknown> = {
 	string: handleStringField,
 	object: handleObjectField,
 	array: handleArrayField,
@@ -30,21 +44,28 @@ const FIELD_HANDLERS = {
 	slug: handleSlugField,
 	reference: handleReferenceField,
 	file: handleFileField,
-	...GENERIC_FIELD_TYPES.reduce((acc, type) => {
-		acc[type] = handleGeneric;
-		return acc;
-	}, {}),
-};
+	...GENERIC_FIELD_TYPES.reduce<Record<string, typeof handleGeneric>>(
+		(acc, type) => {
+			acc[type] = handleGeneric;
+			return acc;
+		},
+		{},
+	),
+} as Record<string, (params: FieldHandlerParams) => ProcessedGenericField | undefined>;
 
 const parseFieldData = (name: string | null, type: unknown) => {
 	const options = typeof type === "string" ? type.match(/\((.*)\)/)?.[1] : null;
 	const cleanedTypeName =
 		typeof type === "string" ? type.replace(/\((.*)\)/, "") : type;
 
-	const field = {
+	const field: {
+		_type: unknown;
+		dataSignature: unknown;
+		options: string | null | undefined;
+	} = {
 		_type: cleanedTypeName,
-		dataSignature: null,
-		options,
+		dataSignature: null as unknown,
+		options: options ?? null,
 	};
 
 	if (Array.isArray(type)) {
@@ -135,7 +156,8 @@ export const handleField = (
 	const { _type, dataSignature, options } = parseFieldData(name, type);
 	const { validation, cleanedFieldName } = parseValidationRules(name, type);
 
-	const fn = FIELD_HANDLERS?.[_type];
+	const fn =
+		typeof _type === "string" ? FIELD_HANDLERS[_type] : undefined;
 
 	if (typeof fn !== "function") {
 		console.log("🚨 No field handler or declared type found for type: ", type);
@@ -143,17 +165,21 @@ export const handleField = (
 	}
 
 	const formattedField = fn({
-		name: cleanedFieldName || name,
-		type: _type,
-		dataSignature,
-		options,
-	});
+		name: cleanedFieldName || name || "",
+		type: typeof _type === "string" ? _type : "string",
+		dataSignature: typeof dataSignature === "string" ? dataSignature : "",
+		options: options ?? "",
+	}) as ProcessedGenericField | undefined;
+
+	if (!formattedField) {
+		return undefined;
+	}
 
 	return {
 		...formattedField,
 		...coalesce("validation", validation),
 		_PARAMS: {
-			type: fieldToTypeDefinition(formattedField),
+			type: fieldToTypeDefinition(formattedField as FieldHandlerReturn),
 		},
-	};
+	} as FieldHandlerReturn;
 };

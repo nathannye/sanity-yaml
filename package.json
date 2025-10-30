@@ -1,12 +1,47 @@
 {
   "name": "sanity-yaml",
-  "module": "index.ts",
+  "version": "0.1.0",
+  "description": "A bulk Sanity.io schema and component generator from YAML",
   "type": "module",
-  "scripts": {
-    "generate": "bun run index.ts",
-    "example": "bun run example/generate.ts"
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
   },
-  "devDependencies": {
+  "bin": {
+    "sanity-yaml": "./bin/cli.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "generate": "bun run index.ts",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "sanity",
+    "sanity-io",
+    "yaml",
+    "schema",
+    "generator",
+    "cms"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.9.0",
     "@sanity/types": "^4.10.3",
     "@types/bun": "latest",
     "handlebars": "^4.7.8",
@@ -14,7 +49,9 @@
     "walkjs": "^6.0.1",
     "yaml": "^2.8.1"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.6"
   }
 }
