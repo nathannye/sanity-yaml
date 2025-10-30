@@ -9,6 +9,7 @@ export type LibraryConfig = {
 			rows?: number;
 		};
 	};
+	removeDefineField?: boolean;
 };
 
 // Default configuration

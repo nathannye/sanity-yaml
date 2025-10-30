@@ -1,5 +1,13 @@
+{{#if (shouldRemoveDefineField)}}
+{
+    name: '{{name}}',
+    type: '{{type}}'
+    {{> sanity-validation validation=validation}}
+},
+{{else}}
 defineField({
     name: '{{name}}',
     type: '{{type}}'
     {{> sanity-validation validation=validation}}
 }),
+{{/if}}

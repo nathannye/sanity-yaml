@@ -1,3 +1,13 @@
+{{#if (shouldRemoveDefineField)}}
+{
+    name: '{{name}}',
+    type: 'reference',
+    to: [{{#each to}}
+        { type: '{{this.type}}' }{{#unless @last}},{{/unless}}
+    {{/each}}],
+    {{> sanity-validation validation=validation}}
+},
+{{else}}
 defineField({
     name: '{{name}}',
     type: 'reference',
@@ -6,3 +16,4 @@ defineField({
     {{/each}}],
     {{> sanity-validation validation=validation}}
 }),
+{{/if}}

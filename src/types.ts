@@ -98,9 +98,7 @@ export type GeneratorConfig = {
 			rows?: number;
 		};
 	};
-	additionalTypes?: {
-		[key: string]: string;
-	};
+	removeDefineField?: boolean;
 	filesets: {
 		[name: string]: {
 			inputPath: string;

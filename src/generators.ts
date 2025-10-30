@@ -1,5 +1,3 @@
-// import { kebabCase, sentenceCase } from "text-case";
-
 import fs from "node:fs";
 import process from "node:process";
 import { confirm } from "@inquirer/prompts";
@@ -344,6 +342,7 @@ export const generateFileset = async ({
 				rows?: number;
 			};
 		};
+		removeDefineField?: boolean;
 	};
 }) => {
 	// Set library config if provided

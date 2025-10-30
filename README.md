@@ -54,6 +54,10 @@ const config: GeneratorConfig = {
     },
   },
 
+  // Optional: Remove defineField wrapper from generated fields
+  // When true, fields will be plain objects instead of defineField() calls
+  removeDefineField: false,
+
   // Required: Define your filesets
   filesets: {
     // Each fileset generates files for schemas in a YAML file
@@ -118,7 +122,9 @@ Create template files (`.hbs`) that use Handlebars syntax:
 
 **`templates/schema.hbs`** - Generates Sanity schema:
 ```handlebars
+{{#unless (shouldRemoveDefineField)}}
 import { defineField } from "sanity";
+{{/unless}}
 
 export default {
   name: '{{name}}',
@@ -129,6 +135,8 @@ export default {
   ],
 };
 ```
+
+> 💡 When `removeDefineField: true` is set in your config, fields will be generated as plain objects instead of `defineField()` calls. You can conditionally import `defineField` in your template using the `shouldRemoveDefineField` helper.
 > 🧠 The component-props will give your linter a heart attack if you have unused-arguments enabled. Use this only if you are okay having a bunch of unused props in each file.
 **`templates/component.hbs`** - Generates JSX component:
 ```handlebars

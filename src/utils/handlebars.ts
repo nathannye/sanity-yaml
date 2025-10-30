@@ -9,6 +9,7 @@ import {
 	snakeCase,
 	titleCase,
 } from "text-case";
+import { getLibraryConfig } from "./config";
 import { resolveFrom } from "./paths";
 
 export const registerPartials = (directory: string) => {
@@ -114,5 +115,11 @@ export const registerHelpers = () => {
 		}
 		// Fallback for built-in @last
 		return !options.data.last;
+	});
+
+	// Helper to check if defineField should be removed
+	Handlebars.registerHelper("shouldRemoveDefineField", () => {
+		const config = getLibraryConfig();
+		return config.removeDefineField === true;
 	});
 };

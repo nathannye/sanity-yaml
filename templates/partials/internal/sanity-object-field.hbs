@@ -1,3 +1,12 @@
+{{#if (shouldRemoveDefineField)}}
+{
+    name: '{{name}}',
+    type: 'object',
+    fields: [
+        {{> sanity-fields fields=fields}}
+    ]{{> sanity-validation validation=validation}}
+},
+{{else}}
 defineField({
     name: '{{name}}',
     type: 'object',
@@ -5,3 +14,4 @@ defineField({
         {{> sanity-fields fields=fields}}
     ]{{> sanity-validation validation=validation}}
 }),
+{{/if}}
