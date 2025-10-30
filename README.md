@@ -61,7 +61,7 @@ const config: GeneratorConfig = {
     // Each fileset generates files for schemas in a YAML file
     slices: {
       inputPath: "./schemas.yaml",
-      onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate }) => {
+      onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
         // Generate Sanity schema file
         // Note: Output directories are created automatically if they don't exist
         await renderTemplate({
@@ -70,11 +70,19 @@ const config: GeneratorConfig = {
           outputPath: `./generated/schemas/${name}.ts`,
         });
 
-        // Generate React component file
+        // Generate JSX component file
         await renderTemplate({
           template: "./templates/component.hbs",
           data: { name, typeDefinition },
           outputPath: `./generated/components/${name}.tsx`,
+        });
+
+        // Add import to index file using import template
+        await modifyFile({
+          template: "./templates/import.hbs",
+          data: { name },
+          targetFile: "./generated/schemas/index.ts",
+          regex: "const sections=\{", // Match existing export statements, replace with new export + existing
         });
       },
     },
@@ -139,6 +147,11 @@ const {{pascalCase name}} = ({ {{> component-props typeDefinition=typeDefinition
 };
 
 export default {{pascalCase name}};
+```
+
+**`templates/import.hbs`** - Template for adding exports to index file:
+```handlebars
+export * from './{{name}}';
 ```
 
 ## Running
@@ -332,7 +345,7 @@ export * from './{{kebabCase name}}'
 Three built-in partials are available for use in your templates (no setup required). Each partial requires specific property names:
 
 ## `component-props`
-Generates component props destructuring for React components.
+Generates component props destructuring for JSX components.
 
 ```hbs
 const MyComponent = ({ {{> component-props typeDefinition=typeDefinition}} }: MyComponentProps) => {
