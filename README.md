@@ -1,8 +1,8 @@
 
-> 🚨 This library is under active development, syntax is up for grabs at the moment but the premise will remain the same. I highly recommend not installing this while I work out the kinks
+> 🚨 This library is under active development, breaking changes are to be expected while I figure out the best way to use this.
 
 # What is this
-A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatecer you want) in yaml with basic validation rules and print them to files using handlebars templates.
+A bulk Sanity.io schema and component generator. Write your schemas (images, arrays, objects, whatever you want) in yaml with basic validation rules and print them to files using handlebars templates.
 
 # Why
 One of the first steps to building a new CMS-driven site is creating the schemas/sections and the matching frontend components. It's not fast work, for me it's 90m to an hour at least, every time. So to save myself some time I made this, much faster to write a yaml-ish syntax and generate proper schemas and files than to type it all by hand, or leave it up to interpretation by your model of choice
@@ -11,6 +11,22 @@ Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely 
 
 
 # Getting Started
+
+## Installation
+
+Install the package in your project:
+
+```bash
+# Using pnpm
+pnpm add sanity-yaml
+
+# Using npm
+npm install sanity-yaml
+```
+
+**Requirements:**
+- Node.js 18+ 
+- TypeScript 5.0+ (for TypeScript config files)
 
 ## Project Structure
 
@@ -33,7 +49,7 @@ Create a `sanity-yaml.config.ts` or `sanity-yaml.config.js` file in your project
 import type { GeneratorConfig } from "sanity-yaml";
 
 const config: GeneratorConfig = {
-  // Optional: Set default field options, only text is supported at curent
+  // Optional: Set default field options, only text is supported currently
   fieldDefaults: {
     text: {
       rows: 4, // Default rows for text fields
@@ -47,6 +63,7 @@ const config: GeneratorConfig = {
       inputPath: "./schemas.yaml",
       onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate }) => {
         // Generate Sanity schema file
+        // Note: Output directories are created automatically if they don't exist
         await renderTemplate({
           template: "./templates/schema.hbs",
           data: { name, sanityFields },
@@ -160,10 +177,15 @@ arrayName:
 **Our syntax**
 We re-use the native object syntax and keep the array `[]` modifier used on other fields, ex: `string[]`.
 ```yaml
-
 arrayName[]:
-	- field1: string
-	- field2: number
+  - field1: string
+  - field2: number
+```
+
+**For arrays of simple types**, use the simpler syntax:
+```yaml
+tags[]: string
+numbers[]: number
 ```
 
 ## Basics
@@ -173,7 +195,7 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 
 | Sanity Field Type | Basic Syntax                        | Description                                   | Advanced Syntax Example                |
 |:------------------|:------------------------------------|:-----------------------------------------------|:---------------------------------------|
-| `array`           | `tags[]: {fieldName}`               | Array of any field type                        | Can be used with any field type        |
+| `array`           | `tags[]: string` or `items[]: -field: type` | Array of any field type                        | Simple: `tags[]: string`, Objects: `items[]: -field1: string -field2: number` |
 | `boolean`         | `isActive: boolean`                 | `true`/`false` value                           |                                        |
 | `date`            | `eventDate: date`                   | ISO-format date string                         |                                        |
 | `datetime`        | `publishedDate: datetime`           | ISO-format date/time string                    |                                        |
@@ -182,9 +204,8 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 | `geopoint`        | `location: geopoint`                | Point with lat/lng/alt                         |                                        |
 | `image`           | `thumbnail: image`                  | Sanity image field                             |                                        |
 | `number`          | `count: number`                     | Numeric value (integer or float)               |                                        |
-| `object`          | ``` stuff: -field: type - thing:type ``` | Nested fields as an object                   |                                        |
-| `reference`       | `author: ->author`                  | Reference (relation) to another document       | `category: ->category[]` (array of refs)|
-| `reference array` | `clothing[]: ->(shirts,pants)`      | Reference (relation) to another document       |                                        |
+| `object`          | `address: -street: string -city: string` | Nested fields as an object                   | Multiple fields: `address: -street: string -city: string -zip: number` |
+| `reference`       | `author: ->author`                  | Reference (relation) to another document       | Single: `author: ->author`, Array: `categories[]: ->category`, Multiple types: `clothing[]: ->(shirts,pants)` |
 | `slug`            | `slug: slug`                        | Slug field automatically generated from a source | Use another field as source: `slug: slug(title)` |
 | `string`          | `name: string`                      | Plain text string                              | List options: `status: string(active, inactive)`  |
 | `text`            | `description: text`                 | Plain text with multiple lines                 | Row amount: `description: text(4)`     |
@@ -204,40 +225,35 @@ SliceName
   fieldName!: string
 ```
 
-### Minimum Length
-A number `\d+` after the field name and before the colon, marks a field as needing a minimum number of items. Compiles to: `validation: (Rule: any)=>Rule.max(${max})`.
+### Maximum Length
+A number after the field name and before the colon marks a field as needing a max number of items or characters. Compiles to: `validation: (Rule: any)=>Rule.max(number)`.
 ```yaml
-SliceName
-  fieldName4: string
+SliceName:
+  fieldName4: string  # Requires minimum 4 characters
 ```
 
 # Example
 
+Here's a complete example showing various field types:
+
 ```yaml
-expedition region
-name: 
-	type: string
-	description: stuff
-points: string[]
-ponts2: {
-	- title: string
-	- name: number
-}[]
-- points3: array(string)
+heroSection:
+  title!: string
+  subtitle: text
+  image: image
+  ctaText!: string
+  ctaLink!4: string
+  tags[]: string
 
-expedition
-- title: string
-- date: date
-- region: ->expedition-region
-- description: text
-- slug: PrefixedSlug
-- thing: ->place-mcgee[]
-
-thing
-- stuff: {
-	- lastname: string
-	- firstname: string
-}[]
+blogPost:
+  title!: string
+  slug!: slug(title)
+  publishedDate!: datetime
+  author: ->author
+  categories[]: ->category
+  content: text(10)
+  featuredImage: image
+  metadata: -description: string -keywords: string[]
 ```
 
 # How it works: Templates
@@ -279,7 +295,7 @@ export * from './{{kebabCase name}}'
 
 ## Template Partials
 
-Three partials are exposed for use in your templates. Each partial requires specific property names:
+Three built-in partials are available for use in your templates (no setup required). Each partial requires specific property names:
 
 ## `component-props`
 Generates component props destructuring for React components.
@@ -319,8 +335,7 @@ Outputs complete Sanity `defineField` calls for all field types.
 
 ## Full Frontend Template file example
 ```hbs
-
-
+<!-- jsx-types only utputs the types, NOT the type or interface wrapper -->
 interface {{pascalCase name}}Props {
 {{> jsx-types typeDefinition=typeDefinition}}
 }
@@ -353,10 +368,11 @@ export default {
     ],
     preview: {
 			prepare(){
-				title: '{{name}}''
+				return {
+					title: '{{name}}'
+				}
 			}
 		}
 }
-
 
 ```
