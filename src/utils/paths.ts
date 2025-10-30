@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
+import { isAbsolute, normalize, resolve } from "node:path";
 import Handlebars from "handlebars";
-import { isAbsolute, resolve } from "node:path";
-import { normalize } from "node:path";
 
 export function resolveFrom(userPath, base = process.cwd()) {
 	if (!userPath) throw new Error("No Path Provided");
@@ -18,7 +17,6 @@ export const getCompiledTemplate = async (templateName: string) => {
 	const target = resolveFrom(templateName);
 
 	const template = await fs.readFile(target, "utf8");
-
 
 	return Handlebars.compile(template);
 };

@@ -1,14 +1,15 @@
-import Slice from '~/components/Slice'
 
-{{> frontend-types-jsx name=name fields=fields}}
+interface {{pascalCase name}}Props {
+{{> jsx-types typeDefinition=typeDefinition}}
+}
 
-const {{pascalCase name}} = ({}: {{pascalCase name}}Props) => {
+const {{pascalCase name}} = ({ {{> component-props typeDefinition=typeDefinition}} }: {{pascalCase name}}Props) => {
   return (
-    <Slice>
+    <section>
       <div className="h-screen w-full border-8 flex justify-center items-center">
         <h2>Slice: {{name}}</h2>
       </div>
-    </Slice>
+    </section>
   )
 }
 

@@ -9,7 +9,6 @@ export const renderToFile = async (
 	outputPath: string,
 	outputName: string,
 ) => {
-	console.log(data);
 	// 1) Load template + data
 	const templateFile = await getCompiledTemplate(templateName);
 	const renderedTemplate = templateFile(data);

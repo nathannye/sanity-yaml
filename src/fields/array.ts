@@ -1,8 +1,12 @@
-import type { FieldHandlerParams, ProcessedGenericField } from "~/types";
+import type {
+	FieldHandlerParams,
+	FieldHandlerReturn,
+	ProcessedGenericField,
+} from "~/types";
 import { handleField } from "../utils/field-handlers";
 
 type ProcessedArrayField = ProcessedGenericField & {
-	of: [{ type: string | string }];
+	of: FieldHandlerReturn[];
 };
 
 export const handleArrayField = ({
@@ -13,9 +17,17 @@ export const handleArrayField = ({
 }: FieldHandlerParams): ProcessedArrayField | undefined => {
 	const correctedFieldName = name.replace("[]", "");
 
+	// When dataSignature is an object, it represents the array item type
+	// We pass null as the name since this is an anonymous inline type
+	const inner = handleField(null as unknown as string, dataSignature);
+
+	if (!inner) {
+		return undefined;
+	}
+
 	return {
 		name: correctedFieldName,
 		type: "array",
-		of: [{ ...handleField(type, dataSignature) }],
+		of: [inner],
 	};
 };

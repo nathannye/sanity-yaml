@@ -4,21 +4,24 @@ const TYPE_TRANSFORMERS: Record<
 	string,
 	string | ((args: FieldHandlerReturn) => string)
 > = {
-	datetime: "String",
-	date: "String",
-	url: "String",
-	text: "String",
-	email: "String",
+	datetime: "string",
+	date: "string",
+	url: "string",
+	text: "string",
+	email: "string",
 	string: ({ options }) => {
-		if (Array.isArray(options)) {
-			return options.map((option) => `'${option}'`).join(" | ");
+		if (options && typeof options === "object" && options.list) {
+			const opts = Array.isArray(options.list) ? options.list : [];
+			return opts.map((option: string) => `'${option}'`).join(" | ");
 		}
-		return "String";
+		return "string";
 	},
-	number: "Number",
-	boolean: "Boolean",
+	number: "number",
+	file: "any",
+	boolean: "boolean",
 	reference: "any",
-	array: "Array",
+	array: "array",
+	geopoint: "{ lat: number; lng: number; alt: number }",
 };
 
 export const fieldToTypeDefinition = (field: FieldHandlerReturn) => {

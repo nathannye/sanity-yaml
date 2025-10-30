@@ -36,7 +36,7 @@ const FIELD_HANDLERS = {
 	}, {}),
 };
 
-const parseFieldData = (name: string | null, type: string) => {
+const parseFieldData = (name: string | null, type: unknown) => {
 	const options = typeof type === "string" ? type.match(/\((.*)\)/)?.[1] : null;
 	const cleanedTypeName =
 		typeof type === "string" ? type.replace(/\((.*)\)/, "") : type;
@@ -67,7 +67,7 @@ const parseFieldData = (name: string | null, type: string) => {
 		return field;
 	}
 
-	if (typeof type === "object") {
+	if (typeof type === "object" && type !== null && !Array.isArray(type)) {
 		field._type = "object";
 		field.dataSignature = cleanedTypeName;
 
@@ -143,7 +143,7 @@ export const handleField = (
 	}
 
 	const formattedField = fn({
-		name: cleanedFieldName,
+		name: cleanedFieldName || name,
 		type: _type,
 		dataSignature,
 		options,

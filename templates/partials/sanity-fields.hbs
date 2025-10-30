@@ -1,8 +1,6 @@
-{{#each fields}}
-    {{#switch type}} 
-        {{#case 'reference'}} {{> sanity-reference-field name=name to=to validation=validation}} {{/case}} 
-        {{#case 'object'}} {{> sanity-object-field name=name fields=fields validation=validation type=type }} {{/case}}
-        {{!-- {{#case 'array'}} {{> sanity-array-field name=name fields=fields validation=validation type=type }} {{/case}} --}}
-        {{#default}} {{> sanity-simple-field name=name type=type validation=validation}} {{/default}}
-    {{/switch}}
-{{/each}}
+{{#each fields~}}
+    {{#if (eq this.type 'reference')~}}{{> sanity-reference-field name=this.name to=this.to validation=this.validation}}{{~/if~}}
+    {{#if (eq this.type 'object')~}}{{> sanity-object-field name=this.name fields=this.fields validation=this.validation type=this.type }}{{~/if~}}
+    {{#if (eq this.type 'array')~}}{{> sanity-array-field name=this.name of=this.of validation=this.validation }}{{~/if~}}
+    {{#unless (or (eq this.type 'reference') (eq this.type 'object') (eq this.type 'array'))~}}{{> sanity-simple-field name=this.name type=this.type validation=this.validation}}{{~/unless~}}
+{{~/each}}

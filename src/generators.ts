@@ -1,29 +1,18 @@
 // import { kebabCase, sentenceCase } from "text-case";
-import { handleField } from "~/utils/field-handlers";
 
-// import { resolveFrom } from "~/utils/file";
-import { walk, WalkBuilder } from "walkjs";
 import fs from "node:fs";
-import yaml from "yaml";
-import { FieldHandlerReturn, FilesetDataOutput } from "./types";
-import { renderToFile } from "./utils/render";
 import { titleCase } from "text-case";
-// import { renderToFile } from "~/render";
-
-// const generateFrontendFile = async (
-// 	name: string,
-// 	fields: Record<string, string>,
-// ) => {
-// 	const outputPath = resolveFrom(CONFIG. slices.frontendTemplate);
-// 	await renderToFile(
-// 		outputPath,
-// 		{
-// 			name,
-// 			fields,
-// 		},
-// 		`${name}.tsx`,
-// 	);
-// };
+// import { resolveFrom } from "~/utils/file";
+import { WalkBuilder, walk } from "walkjs";
+import yaml from "yaml";
+import { handleField } from "~/utils/field-handlers";
+import type {
+	FieldHandlerReturn,
+	FileCreatorCallbackArgs,
+	FilesetDataOutput,
+} from "./types";
+import { renderTemplate, updateFile } from "./utils/exposed";
+import { renderToFile } from "./utils/render";
 
 const createSchema = (item: Record<string, unknown>) => {
 	const fields: FieldHandlerReturn[] = [];
@@ -54,6 +43,7 @@ const createSchema = (item: Record<string, unknown>) => {
 const createType = (schema: any) => {
 	// console.log("schema::", schema);
 	const root = {};
+	const processedNestedFields = new Set<string>();
 
 	new WalkBuilder()
 		.withGlobalFilter((a) => !!a.key && a?.val?._PARAMS)
@@ -61,30 +51,96 @@ const createType = (schema: any) => {
 			const fieldName = node.val.name;
 			const fieldType = node.val._PARAMS.type;
 
+			// Skip if this field is nested within an object (it's already handled in the object case)
+			if (node.parent?.val?.type === "object") {
+				if (fieldName) processedNestedFields.add(fieldName);
+				return;
+			}
+
+			// Skip if this field was already processed as a nested field
+			if (fieldName && processedNestedFields.has(fieldName)) {
+				return;
+			}
+
 			switch (node.val.type) {
-				case "object":
+				case "object": {
 					const t = {};
 					const fields = node.val.fields;
 
 					fields.forEach((field, i) => {
-						t[String(field.name)] = field._PARAMS.type;
+						// Mark nested fields as processed so they don't get added to root
+						if (field.name) {
+							processedNestedFields.add(field.name);
+						}
+
+						// If the field is an array, handle it specially
+						if (field.type === "array" && field.of) {
+							const ofTypes = field.of
+								.map((o: any) => {
+									if (o.type === "object" && o.fields) {
+										// Mark nested fields within array objects as processed
+										o.fields.forEach((f: any) => {
+											if (f.name) {
+												processedNestedFields.add(f.name);
+											}
+										});
+
+										const objFields = o.fields
+											.map(
+												(f: any) =>
+													`  ${String(f.name)}: ${f._PARAMS?.type || "any"}`,
+											)
+											.join(";\n");
+										return `{\n${objFields};\n}`;
+									}
+									return o._PARAMS?.type || o.type;
+								})
+								.filter(Boolean)
+								.join(" | ");
+							const needsParens = ofTypes.includes("|");
+							t[String(field.name)] = needsParens
+								? `(${ofTypes})[]`
+								: `${ofTypes}[]`;
+						} else {
+							t[String(field.name)] = field._PARAMS.type;
+						}
 					});
 
 					root[fieldName] = t;
 
 					break;
-				case "array":
-					const a = {};
+				}
+				case "array": {
+					const ofTypes = node.val.of
+						.map((o: any) => {
+							// If it's an object type, create the inline object type
+							if (o.type === "object" && o.fields) {
+								// Mark nested fields within array objects as processed
+								o.fields.forEach((f: any) => {
+									if (f.name) {
+										processedNestedFields.add(f.name);
+									}
+								});
 
-					const of = node.val.of;
+								const objFields = o.fields
+									.map(
+										(field: any) =>
+											`  ${String(field.name)}: ${field._PARAMS?.type || "any"}`,
+									)
+									.join(";\n");
+								return `{\n${objFields};\n}`;
+							}
+							return o._PARAMS?.type || o.type;
+						})
+						.filter(Boolean)
+						.join(" | ");
 
-					of.forEach((o, i) => {
-						a[String(o.type)] = o.type;
-					});
-
-					root[fieldName] = `${a}[]`;
+					// Only wrap in parentheses if there's more than one type
+					const needsParens = ofTypes.includes("|");
+					root[fieldName] = needsParens ? `(${ofTypes})[]` : `${ofTypes}[]`;
 
 					break;
+				}
 				default:
 					root[fieldName] = fieldType;
 					break;
@@ -95,39 +151,37 @@ const createType = (schema: any) => {
 	return root;
 };
 
-export const generateFileset = ({
+export const generateFileset = async ({
 	name,
-	input,
-	data,
-	template,
-	output,
+	inputPath,
+	onFileCreate,
 }: {
 	name: string;
-	filepath: string;
-	data: FilesetDataOutput;
-	template: string;
-	output: string;
+	inputPath: string;
+	onFileCreate: (args: FileCreatorCallbackArgs) => void | Promise<void>;
 }) => {
-	const graph = yaml.parse(fs.readFileSync(input, "utf8"));
+	const parsedYaml = yaml.parse(fs.readFileSync(inputPath, "utf8"));
 
-	const fileset = Object.entries(graph).flatMap(([key, value]) => {
-		const schema = createSchema(value);
-		const typeDefinition = createType(schema);
+	const fileset = Object.entries(parsedYaml).flatMap(([key, value]) => {
+		const sanityFields = createSchema(value);
+		const typeDefinition = createType(sanityFields);
 
-		return { name: key, schema, typeDefinition, title: titleCase(key) };
+		return { name: key, sanityFields, typeDefinition, title: titleCase(key) };
 	});
 
-	fileset.forEach((file, i) => {
-		console.log("f:", file.schema);
+	// Wait for all file creation promises to resolve
+	await Promise.all(
+		fileset.map(async (file) => {
+			const result = onFileCreate({
+				name: file.name,
+				sanityFields: file.sanityFields,
+				typeDefinition: file.typeDefinition,
+				renderTemplate,
+				updateFile,
+			});
+			await result; // Resolve promise if it's async, otherwise await undefined
+		}),
+	);
 
-		const templateData =
-			{
-				schema: { fields: file.schema, ...file },
-				type: { types: file.typeDefinition, ...file },
-			}[data as FilesetDataOutput] || {};
-
-		renderToFile(template, templateData, output, `${file.name}.ts`);
-	});
-
-	// console.log("processed::", processed);
+	console.log(`✅ Generated ${fileset.length} files for ${name}`);
 };

@@ -25,6 +25,6 @@ export const handleReferenceField = ({
 	return {
 		name: name,
 		type: "reference",
-		of: referenceTo,
+		to: referenceTo,
 	};
 };

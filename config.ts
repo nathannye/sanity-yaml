@@ -1,4 +1,4 @@
-import { FilesetDataOutput } from "~/types";
+// These are exposed to the config via FileCreatorCallbackArgs
 
 export const FIELDS_MAP = {
 	string: "string",
@@ -30,10 +30,22 @@ export type GeneratorConfig = {
 
 	filesets: {
 		[name: string]: {
-			output: string;
-			input: string;
-			template: string;
-			data: FilesetDataOutput;
+			inputPath: string;
+			onFileCreate: (args: {
+				name: string;
+				sanityFields: any;
+				typeDefinition: any;
+				renderTemplate: (args: {
+					template: string;
+					data: any;
+					outputPath: string;
+				}) => Promise<void>;
+				updateFile: (
+					filepath: string,
+					regex?: string,
+					content?: string,
+				) => Promise<void>;
+			}) => void | Promise<void>;
 		};
 	};
 };
@@ -46,26 +58,34 @@ export const CONFIG: GeneratorConfig = {
 	},
 
 	typescript: {
-		// useTypeInstead: false, // if true, use type instead of interface in type definitions
-		removeAppendedName: false,
+		// not sure what to call it but control if its an interface or a type
 	},
 
 	filesets: {
-		schemas: {
-			output: "/",
-			input: "slices.yaml",
-			template: "templates/sanity-slice.hbs",
-			data: "schema",
+		blogSchemas: {
+			inputPath: "./slices.yaml",
+			onFileCreate: async ({
+				name,
+				sanityFields,
+				typeDefinition,
+				renderTemplate,
+			}) => {
+				await renderTemplate({
+					template: "./templates/sanity-slice.hbs",
+					data: { name, sanityFields },
+					outputPath: `./generated/schemas/${name}.ts`,
+				});
+				await renderTemplate({
+					template: "./templates/frontend-slice.hbs",
+					data: { name, typeDefinition },
+					outputPath: `./generated/components/${name}.tsx`,
+				});
+				// await updateFile(
+				// 	"../my-index-file.ts",
+				// 	"REGEX",
+				// 	`export * from './${name}'`,
+				// );
+			},
 		},
-		// types: {
-		// 	output: "/dist/types",
-		// 	input: "slices.yaml",
-		// 	template: "sanity-",
-		// 	data: "type",
-		// },
 	},
-
-	// additionalTypes: {
-	// 	link: "link",
-	// },
 };

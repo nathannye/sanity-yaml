@@ -28,8 +28,8 @@ export type ExtraFieldParams = {
 
 export type TemplateData = {
 	name: string;
-	title: string;
-	fields: Record<string, string>;
+	sanityFields: FieldHandlerReturn[];
+	typeDefinition: Record<string, string>;
 };
 
 export type FieldHandlerParams = {
@@ -46,3 +46,19 @@ export type ProcessedGenericField = {
 };
 
 export type FieldHandlerReturn = ProcessedGenericField & ExtraFieldParams;
+
+export type FileCreatorCallbackArgs = {
+	name: string;
+	sanityFields: FieldHandlerReturn[];
+	typeDefinition: Record<string, string>;
+	renderTemplate: (args: {
+		template: string;
+		data: any;
+		outputPath: string;
+	}) => Promise<void>;
+	updateFile: (
+		filepath: string,
+		regex: string | undefined,
+		content: string | undefined,
+	) => Promise<void>;
+};

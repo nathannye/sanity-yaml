@@ -9,9 +9,18 @@ export const handleObjectField = ({
 	name,
 	dataSignature,
 }: FieldHandlerParams): ProcessedObjectField => {
-	const fieldsArray = Object.entries(dataSignature).map(([key, value]) => {
-		return handleField(key, value);
-	});
+	// Ensure dataSignature is an object
+	if (typeof dataSignature !== "object" || dataSignature === null || Array.isArray(dataSignature)) {
+		return {
+			name: name === "array" ? undefined : name,
+			type: "object",
+			fields: [],
+		};
+	}
+
+	const fieldsArray = Object.entries(dataSignature)
+		.map(([key, value]) => handleField(key, value))
+		.filter(Boolean) as ProcessedGenericField[];
 
 	return {
 		name: name === "array" ? undefined : name,
