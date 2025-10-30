@@ -11,6 +11,26 @@ One of the first steps to building a new CMS-driven site is creating the schemas
 
 > 👀 Highly inspired by [plop.js](https://www.npmjs.com/package/plop). An absolutely incredible library for one-off file generation.
 
+## Table of Contents
+
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Project Structure](#project-structure)
+  - [Configuration File](#configuration-file)
+  - [YAML Schema File](#yaml-schema-file)
+  - [Handlebars Templates](#handlebars-templates)
+  - [Running](#running)
+- [How it works: Syntax](#how-it-works-syntax)
+  - [Gotchas](#gotchas)
+  - [Basics](#basics)
+  - [Supported Field Types](#supported-field-types)
+  - [Using Custom Sanity Types](#using-custom-sanity-types)
+  - [Field Validation](#field-validation)
+  - [Example](#example)
+- [How it works: Templates](#how-it-works-templates)
+  - [Available Data](#available-data)
+  - [Handlebars Helpers](#handlebars-helpers)
+  - [Template Partials](#template-partials)
 
 # Getting Started
 
