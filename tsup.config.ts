@@ -17,7 +17,6 @@ export default defineConfig({
 	bundle: false,
 	external: [
 		"@inquirer/prompts",
-		"@sanity/types",
 		"handlebars",
 		"text-case",
 		"walkjs",

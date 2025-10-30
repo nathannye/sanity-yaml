@@ -1,0 +1,14 @@
+# Source maps - not needed in published package
+*.map
+
+# TypeScript config files
+tsconfig.json
+tsup.config.ts
+
+# Linter config
+biome.json
+
+# Development files
+.git
+.turbo
+
