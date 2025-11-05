@@ -156,11 +156,12 @@ const config: GeneratorConfig = {
 
         // Add import to index file using direct template string
         // Use 'template' parameter for inline template strings
+        // The regex option inserts content AFTER the matched pattern (doesn't replace it)
         await modifyFile({
           template: "import {{pascalCase name}} from './{{name}}/{{pascalCase name}}.tsx'\n",
           data: { name },
           targetFile: "./generated/schemas/index.ts",
-          regex: "const sections=\{", // Match existing export statements, replace with new export + existing
+          regex: "const sections = \{", // Inserts import statement after this line
         });
       },
     },
@@ -444,11 +445,47 @@ onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modif
     data: { name },
     targetFile: "./src/components/{{kebabCase name}}/index.ts",
     // Renders to: ./src/components/hero-section/index.ts
+    regex: "const sections = \{", // Optional: inserts content AFTER this pattern
   });
 }
 ```
 
 > 💡 **Note:** The `templateFile` parameter path is processed as a Handlebars template before resolving the file path, so you can dynamically select template files based on the schema name or other data properties. This is especially useful when you have multiple template variants or want to organize templates by naming conventions.
+
+### `modifyFile` Behavior
+
+The `modifyFile` function modifies existing files by inserting or appending content:
+
+- **Without `regex`**: Appends the rendered template content to the end of the file
+- **With `regex`**: Finds the first match of the regex pattern and inserts the rendered template content **after** the match (the matched content is preserved)
+
+**Example with regex:**
+If your file contains:
+```typescript
+const sections = {
+  // existing code
+}
+```
+
+And you call:
+```typescript
+await modifyFile({
+  template: "import HeroSection from './heroSection'\n",
+  data: { name: "heroSection" },
+  targetFile: "./index.ts",
+  regex: "const sections = \{",
+});
+```
+
+The result will be:
+```typescript
+const sections = {
+import HeroSection from './heroSection'
+  // existing code
+}
+```
+
+The matched pattern (`const sections = \{`) is preserved, and the template content is inserted right after it.
 
 ## Handlebars Helpers
 

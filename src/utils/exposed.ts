@@ -164,11 +164,12 @@ export const modifyFile = async (args: {
 		}
 	}
 
-	// If regex is provided, replace the matched content
+	// If regex is provided, insert the template content after the matched pattern
 	let updatedContent: string;
 	if (regexPattern) {
 		if (regexPattern.test(fileContent)) {
-			updatedContent = fileContent.replace(regexPattern, renderedContent);
+			// Insert rendered content after the match (using $& to keep the matched content)
+			updatedContent = fileContent.replace(regexPattern, `$&${renderedContent}`);
 		} else {
 			// If regex doesn't match, log a warning and append
 			console.warn(
