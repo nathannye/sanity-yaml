@@ -14,15 +14,19 @@ export const renderTemplate = async (args: {
 	};
 	outputPath: string;
 }) => {
+	// Compile and render template path as a Handlebars template
+	const templatePathTemplate = Handlebars.compile(args.template);
+	const renderedTemplatePath = templatePathTemplate(args.data);
+
 	// Resolve template path
-	const templatePath = resolveFrom(args.template);
+	const templatePath = resolveFrom(renderedTemplatePath);
 
 	// Check if template file exists
 	try {
 		await fs.access(templatePath);
 	} catch {
 		throw new Error(
-			`Template file not found: ${args.template} (resolved to: ${templatePath})`,
+			`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath})`,
 		);
 	}
 
@@ -62,15 +66,19 @@ export const modifyFile = async (args: {
 	targetFile: string;
 	regex?: string;
 }) => {
+	// Compile and render template path as a Handlebars template
+	const templatePathTemplate = Handlebars.compile(args.template);
+	const renderedTemplatePath = templatePathTemplate(args.data);
+
 	// Resolve template path
-	const templatePath = resolveFrom(args.template);
+	const templatePath = resolveFrom(renderedTemplatePath);
 
 	// Check if template file exists
 	try {
 		await fs.access(templatePath);
 	} catch {
 		throw new Error(
-			`Template file not found: ${args.template} (resolved to: ${templatePath})`,
+			`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath})`,
 		);
 	}
 
@@ -120,7 +128,7 @@ export const modifyFile = async (args: {
 		} else {
 			// If regex doesn't match, log a warning and append
 			console.warn(
-				`Regex pattern did not match in ${args.targetFile}, appending content instead`,
+				`Regex pattern did not match in ${renderedTargetFile}, appending content instead`,
 			);
 			updatedContent = fileContent + renderedContent;
 		}

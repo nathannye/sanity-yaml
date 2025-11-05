@@ -139,23 +139,25 @@ const config: GeneratorConfig = {
       onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
         // Generate Sanity schema file
         // Note: Output directories are created automatically if they don't exist
+        // You can use Handlebars helpers in template paths too!
         await renderTemplate({
-          template: "./templates/schema.hbs",
+          template: "./templates/{{name}}.hbs",  // Template path supports Handlebars
           data: { name, sanityFields },
-          outputPath: `./generated/schemas/{{kebabCase name}}.ts`,
+          outputPath: `./generated/schemas/{{kebabCase name}}.ts`,  // Output path supports Handlebars
         });
 
         // Generate JSX component file
-        // You can use Handlebars helpers in file paths!
+        // Both template and outputPath support Handlebars helpers
         await renderTemplate({
-          template: "./templates/component.hbs",
+          template: "./templates/{{kebabCase name}}-component.hbs",
           data: { name, typeDefinition },
           outputPath: `./generated/components/{{kebabCase name}}.tsx`,
         });
 
-        // Add import to index file using import template 
+        // Add import to index file using import template
+        // Template path supports Handlebars syntax
         await modifyFile({
-          template: "./templates/import.hbs",
+          template: "./templates/{{name}}-import.hbs",
           data: { name },
           targetFile: "./generated/schemas/index.ts",
           regex: "const sections=\{", // Match existing export statements, replace with new export + existing
@@ -405,36 +407,43 @@ The `onFileCreate` callback receives an object with the following properties:
 - `renderTemplate` - Function to render a Handlebars template
 - `modifyFile` - Function to modify an existing file
 
-### Handlebars in File Paths
+### Handlebars in File Paths and Template Paths
 
-Both `outputPath` (in `renderTemplate`) and `targetFile` (in `modifyFile`) support Handlebars template syntax, allowing you to use helpers like `{{pascalCase}}`, `{{kebabCase}}`, etc. directly in file paths.
+The `template` parameter (in both `renderTemplate` and `modifyFile`), `outputPath` (in `renderTemplate`), and `targetFile` (in `modifyFile`) all support Handlebars template syntax, allowing you to use helpers like `{{pascalCase}}`, `{{kebabCase}}`, etc. directly in file paths.
 
 **Example:**
 ```typescript
-onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate }) => {
-  // Use Handlebars helpers in file paths
+onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
+  // Use Handlebars helpers in template paths
   await renderTemplate({
-    template: "./templates/component.hbs",
+    template: "./templates/{{name}}.hbs",
+    // Renders to: ./templates/heroSection.hbs
     data: { name, typeDefinition },
     outputPath: `./src/components/{{kebabCase name}}.tsx`,
     // Renders to: ./src/components/hero-section.tsx
   });
   
+  // Use Handlebars helpers in template paths with casing helpers
   await renderTemplate({
-    template: "./templates/types.hbs",
+    template: "./templates/{{kebabCase name}}-component.hbs",
+    // Renders to: ./templates/hero-section-component.hbs
     data: { name, typeDefinition },
     outputPath: `./src/types/{{pascalCase name}}.ts`,
     // Renders to: ./src/types/HeroSection.ts
   });
   
+  // Use Handlebars helpers in modifyFile template path
   await modifyFile({
-    template: "./templates/import.hbs",
+    template: "./templates/{{name}}-import.hbs",
+    // Renders to: ./templates/heroSection-import.hbs
     data: { name },
     targetFile: "./src/components/{{kebabCase name}}/index.ts",
     // Renders to: ./src/components/hero-section/index.ts
   });
 }
 ```
+
+> 💡 **Note:** The `template` parameter is processed as a Handlebars template before resolving the file path, so you can dynamically select template files based on the schema name or other data properties. This is especially useful when you have multiple template variants or want to organize templates by naming conventions.
 
 ## Handlebars Helpers
 
