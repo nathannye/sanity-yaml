@@ -2,7 +2,7 @@
 
 /**
  * CLI wrapper for sanity-yaml
- * Uses the built JavaScript file if available, otherwise falls back to tsx
+ * Uses the built JavaScript file
  */
 
 import { spawn } from "node:child_process";
@@ -13,39 +13,18 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Try to use the built file first, then fall back to tsx
+// Use the built file
 const builtCliPath = resolve(__dirname, "../dist/bin/cli.js");
-const sourceCliPath = resolve(__dirname, "cli.ts");
 
-let cliPath;
-let tsxCmd;
-let tsxArgs;
-
-if (existsSync(builtCliPath)) {
-	// Use built JavaScript file (production)
-	cliPath = builtCliPath;
-	tsxCmd = "node";
-	tsxArgs = [];
-} else {
-	// Use tsx to run TypeScript file (development)
-	cliPath = sourceCliPath;
-	const nodeModulesTsx = resolve(__dirname, "../node_modules/.bin/tsx");
-	if (existsSync(nodeModulesTsx)) {
-		tsxCmd = nodeModulesTsx;
-		tsxArgs = [];
-	} else {
-		tsxCmd = "npx";
-		tsxArgs = ["-y", "tsx"];
-	}
+if (!existsSync(builtCliPath)) {
+	console.error("❌ Built CLI file not found. Please run `pnpm build` or `npm run build`");
+	console.error(`   Expected location: ${builtCliPath}`);
+	process.exit(1);
 }
 
-const child = spawn(tsxCmd, [...tsxArgs, cliPath, ...process.argv.slice(2)], {
+const child = spawn("node", [builtCliPath, ...process.argv.slice(2)], {
 	stdio: "inherit",
 	shell: true,
-	env: {
-		...process.env,
-		PATH: `${process.env.PATH}:${resolve(__dirname, "../node_modules/.bin")}`,
-	},
 });
 
 child.on("exit", (code) => {
@@ -54,6 +33,6 @@ child.on("exit", (code) => {
 
 child.on("error", (error) => {
 	console.error("❌ Error running sanity-yaml:", error.message);
-	console.error("   Please ensure Node.js and npm/pnpm are installed");
+	console.error("   Please ensure Node.js is installed");
 	process.exit(1);
 });

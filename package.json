@@ -1,6 +1,6 @@
 {
 	"name": "sanity-yaml",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"author": "Nathan Nye <nathan@nye.design> www.nye.deisgn",
 	"description": "A bulk Sanity.io schema and component generator from YAML",
 	"type": "module",
