@@ -137,27 +137,27 @@ const config: GeneratorConfig = {
     yourFilesetName: {
       inputPath: "./schemas.yaml",
       onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
-        // Generate Sanity schema file
+        // Generate Sanity schema file using templateFile (path to .hbs file)
         // Note: Output directories are created automatically if they don't exist
         // You can use Handlebars helpers in template paths too!
         await renderTemplate({
-          template: "./templates/{{name}}.hbs",  // Template path supports Handlebars
+          templateFile: "./templates/{{name}}.hbs",  // Template path supports Handlebars
           data: { name, sanityFields },
           outputPath: `./generated/schemas/{{kebabCase name}}.ts`,  // Output path supports Handlebars
         });
 
-        // Generate JSX component file
-        // Both template and outputPath support Handlebars helpers
+        // Generate JSX component file using templateFile
+        // Both templateFile and outputPath support Handlebars helpers
         await renderTemplate({
-          template: "./templates/{{kebabCase name}}-component.hbs",
+          templateFile: "./templates/{{kebabCase name}}-component.hbs",
           data: { name, typeDefinition },
           outputPath: `./generated/components/{{kebabCase name}}.tsx`,
         });
 
-        // Add import to index file using import template
-        // Template path supports Handlebars syntax
+        // Add import to index file using direct template string
+        // Use 'template' parameter for inline template strings
         await modifyFile({
-          template: "./templates/{{name}}-import.hbs",
+          template: "import {{pascalCase name}} from './{{name}}/{{pascalCase name}}.tsx'\n",
           data: { name },
           targetFile: "./generated/schemas/index.ts",
           regex: "const sections=\{", // Match existing export statements, replace with new export + existing
@@ -407,35 +407,40 @@ The `onFileCreate` callback receives an object with the following properties:
 - `renderTemplate` - Function to render a Handlebars template
 - `modifyFile` - Function to modify an existing file
 
-### Handlebars in File Paths and Template Paths
+### Template Parameters: `templateFile` vs `template`
 
-The `template` parameter (in both `renderTemplate` and `modifyFile`), `outputPath` (in `renderTemplate`), and `targetFile` (in `modifyFile`) all support Handlebars template syntax, allowing you to use helpers like `{{pascalCase}}`, `{{kebabCase}}`, etc. directly in file paths.
+Both `renderTemplate` and `modifyFile` accept either `templateFile` or `template` (but not both):
+
+- **`templateFile`** - Path to a Handlebars template file (`.hbs`). The path itself supports Handlebars syntax for dynamic file selection.
+- **`template`** - Direct template string. Use this for inline templates without needing a separate file.
+
+You must provide exactly one of these parameters. If you provide `templateFile` but the file doesn't exist, you'll get a helpful error suggesting you might want to use `template` instead.
 
 **Example:**
 ```typescript
 onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modifyFile }) => {
-  // Use Handlebars helpers in template paths
+  // Using templateFile - path to a template file
   await renderTemplate({
-    template: "./templates/{{name}}.hbs",
-    // Renders to: ./templates/heroSection.hbs
+    templateFile: "./templates/{{name}}.hbs",
+    // Renders to: ./templates/heroSection.hbs, then reads that file
     data: { name, typeDefinition },
     outputPath: `./src/components/{{kebabCase name}}.tsx`,
     // Renders to: ./src/components/hero-section.tsx
   });
   
-  // Use Handlebars helpers in template paths with casing helpers
+  // Using templateFile with dynamic path selection
   await renderTemplate({
-    template: "./templates/{{kebabCase name}}-component.hbs",
+    templateFile: "./templates/{{kebabCase name}}-component.hbs",
     // Renders to: ./templates/hero-section-component.hbs
     data: { name, typeDefinition },
     outputPath: `./src/types/{{pascalCase name}}.ts`,
     // Renders to: ./src/types/HeroSection.ts
   });
   
-  // Use Handlebars helpers in modifyFile template path
+  // Using template - direct template string (no file needed)
   await modifyFile({
-    template: "./templates/{{name}}-import.hbs",
-    // Renders to: ./templates/heroSection-import.hbs
+    template: "import {{pascalCase name}} from './{{name}}/{{pascalCase name}}.tsx'\n",
+    // Direct template string, no file needed
     data: { name },
     targetFile: "./src/components/{{kebabCase name}}/index.ts",
     // Renders to: ./src/components/hero-section/index.ts
@@ -443,7 +448,7 @@ onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate, modif
 }
 ```
 
-> 💡 **Note:** The `template` parameter is processed as a Handlebars template before resolving the file path, so you can dynamically select template files based on the schema name or other data properties. This is especially useful when you have multiple template variants or want to organize templates by naming conventions.
+> 💡 **Note:** The `templateFile` parameter path is processed as a Handlebars template before resolving the file path, so you can dynamically select template files based on the schema name or other data properties. This is especially useful when you have multiple template variants or want to organize templates by naming conventions.
 
 ## Handlebars Helpers
 

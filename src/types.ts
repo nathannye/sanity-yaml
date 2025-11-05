@@ -63,12 +63,14 @@ export type FileCreatorCallbackArgs = {
 	sanityFields: FieldHandlerReturn[];
 	typeDefinition: Record<string, TypeDefinition>;
 	renderTemplate: (args: {
-		template: string;
+		templateFile?: string;
+		template?: string;
 		data: TemplateData;
 		outputPath: string;
 	}) => Promise<void>;
 	modifyFile: (args: {
-		template: string;
+		templateFile?: string;
+		template?: string;
 		data: TemplateData;
 		targetFile: string;
 		regex?: string;

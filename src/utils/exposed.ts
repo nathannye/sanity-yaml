@@ -5,7 +5,8 @@ import type { FieldHandlerReturn, TemplateData } from "~/types";
 import { resolveFrom } from "./paths";
 
 export const renderTemplate = async (args: {
-	template: string;
+	templateFile?: string;
+	template?: string;
 	data: {
 		name: string;
 		sanityFields: FieldHandlerReturn[];
@@ -14,25 +15,46 @@ export const renderTemplate = async (args: {
 	};
 	outputPath: string;
 }) => {
-	// Compile and render template path as a Handlebars template
-	const templatePathTemplate = Handlebars.compile(args.template);
-	const renderedTemplatePath = templatePathTemplate(args.data);
-
-	// Resolve template path
-	const templatePath = resolveFrom(renderedTemplatePath);
-
-	// Check if template file exists
-	try {
-		await fs.access(templatePath);
-	} catch {
+	// Validate that exactly one of templateFile or template is provided
+	if (!args.templateFile && !args.template) {
 		throw new Error(
-			`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath})`,
+			`Either 'templateFile' or 'template' must be provided. Use 'templateFile' for a file path (e.g., "./templates/{{name}}.hbs") or 'template' for a direct template string (e.g., "import {{pascalCase name}} from './{{name}}'").`,
 		);
 	}
 
-	// Read and compile the template
-	const templateContent = await fs.readFile(templatePath, "utf8");
-	const compiledTemplate = Handlebars.compile(templateContent);
+	if (args.templateFile && args.template) {
+		throw new Error(
+			`Cannot provide both 'templateFile' and 'template'. Use 'templateFile' for a file path or 'template' for a direct template string.`,
+		);
+	}
+
+	let compiledTemplate: HandlebarsTemplateDelegate;
+
+	if (args.templateFile) {
+		// Handle templateFile - path to a template file
+		// Compile and render template path as a Handlebars template
+		const templatePathTemplate = Handlebars.compile(args.templateFile);
+		const renderedTemplatePath = templatePathTemplate(args.data);
+
+		// Resolve template path
+		const templatePath = resolveFrom(renderedTemplatePath);
+
+		// Check if template file exists
+		try {
+			await fs.access(templatePath);
+		} catch {
+			throw new Error(
+				`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath}). If you meant to use a direct template string instead of a file path, use the 'template' parameter instead of 'templateFile'.`,
+			);
+		}
+
+		// Read and compile the template
+		const templateContent = await fs.readFile(templatePath, "utf8");
+		compiledTemplate = Handlebars.compile(templateContent);
+	} else {
+		// Handle template - direct template string
+		compiledTemplate = Handlebars.compile(args.template!);
+	}
 
 	// Render the template with data
 	const renderedContent = compiledTemplate(args.data);
@@ -61,30 +83,52 @@ export const renderTemplate = async (args: {
 };
 
 export const modifyFile = async (args: {
-	template: string;
+	templateFile?: string;
+	template?: string;
 	data: TemplateData;
 	targetFile: string;
 	regex?: string;
 }) => {
-	// Compile and render template path as a Handlebars template
-	const templatePathTemplate = Handlebars.compile(args.template);
-	const renderedTemplatePath = templatePathTemplate(args.data);
-
-	// Resolve template path
-	const templatePath = resolveFrom(renderedTemplatePath);
-
-	// Check if template file exists
-	try {
-		await fs.access(templatePath);
-	} catch {
+	// Validate that exactly one of templateFile or template is provided
+	if (!args.templateFile && !args.template) {
 		throw new Error(
-			`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath})`,
+			`Either 'templateFile' or 'template' must be provided. Use 'templateFile' for a file path (e.g., "./templates/{{name}}.hbs") or 'template' for a direct template string (e.g., "import {{pascalCase name}} from './{{name}}'").`,
 		);
 	}
 
-	// Read and compile the template
-	const templateContent = await fs.readFile(templatePath, "utf8");
-	const compiledTemplate = Handlebars.compile(templateContent);
+	if (args.templateFile && args.template) {
+		throw new Error(
+			`Cannot provide both 'templateFile' and 'template'. Use 'templateFile' for a file path or 'template' for a direct template string.`,
+		);
+	}
+
+	let compiledTemplate: HandlebarsTemplateDelegate;
+
+	if (args.templateFile) {
+		// Handle templateFile - path to a template file
+		// Compile and render template path as a Handlebars template
+		const templatePathTemplate = Handlebars.compile(args.templateFile);
+		const renderedTemplatePath = templatePathTemplate(args.data);
+
+		// Resolve template path
+		const templatePath = resolveFrom(renderedTemplatePath);
+
+		// Check if template file exists
+		try {
+			await fs.access(templatePath);
+		} catch {
+			throw new Error(
+				`Template file not found: ${renderedTemplatePath} (resolved to: ${templatePath}). If you meant to use a direct template string instead of a file path, use the 'template' parameter instead of 'templateFile'.`,
+			);
+		}
+
+		// Read and compile the template
+		const templateContent = await fs.readFile(templatePath, "utf8");
+		compiledTemplate = Handlebars.compile(templateContent);
+	} else {
+		// Handle template - direct template string
+		compiledTemplate = Handlebars.compile(args.template!);
+	}
 
 	// Render the template with data
 	const renderedContent = compiledTemplate(args.data);
