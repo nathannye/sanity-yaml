@@ -11,8 +11,8 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { registerHelpers, registerPartials } from "../src/utils/handlebars.js";
 import { generateFileset } from "../src/generators.js";
+import { registerHelpers, registerPartials } from "../src/utils/handlebars.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -100,7 +100,9 @@ Examples:
 	// Template paths - check dist first (production), then fall back to source (development)
 	const distTemplates = resolve(__dirname, "../dist/templates");
 	const srcTemplates = resolve(__dirname, "../templates");
-	const templatesBase = existsSync(distTemplates) ? distTemplates : srcTemplates;
+	const templatesBase = existsSync(distTemplates)
+		? distTemplates
+		: srcTemplates;
 	registerPartials(resolve(templatesBase, "partials/internal"));
 	registerPartials(resolve(templatesBase, "partials"));
 
@@ -124,7 +126,9 @@ Examples:
 				inputPath: fileset.inputPath,
 				onFileCreate: fileset.onFileCreate,
 				config: {
-					...(config.fieldDefaults ? { fieldDefaults: config.fieldDefaults } : {}),
+					...(config.fieldDefaults
+						? { fieldDefaults: config.fieldDefaults }
+						: {}),
 					...(config.removeDefineField !== undefined
 						? { removeDefineField: config.removeDefineField }
 						: {}),

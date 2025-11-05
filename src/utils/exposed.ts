@@ -169,7 +169,10 @@ export const modifyFile = async (args: {
 	if (regexPattern) {
 		if (regexPattern.test(fileContent)) {
 			// Insert rendered content after the match (using $& to keep the matched content)
-			updatedContent = fileContent.replace(regexPattern, `$&${renderedContent}`);
+			updatedContent = fileContent.replace(
+				regexPattern,
+				`$&${renderedContent}`,
+			);
 		} else {
 			// If regex doesn't match, log a warning and append
 			console.warn(

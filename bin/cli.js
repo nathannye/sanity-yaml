@@ -64,7 +64,9 @@ child.on("error", (error) => {
 	console.error("❌ Error running sanity-yaml:", error.message);
 	console.error("   Please ensure Node.js is installed");
 	if (!existsSync(builtCliPath)) {
-		console.error("   Note: If tsx is not available, please run `pnpm build` or `npm run build`");
+		console.error(
+			"   Note: If tsx is not available, please run `pnpm build` or `npm run build`",
+		);
 	}
 	process.exit(1);
 });
