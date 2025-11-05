@@ -22,6 +22,7 @@ const GENERIC_FIELD_TYPES = [
 	"number",
 	"boolean",
 	"geopoint",
+	"image",
 	"slug",
 	"url",
 ];

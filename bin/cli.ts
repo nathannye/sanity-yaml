@@ -11,6 +11,8 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { registerHelpers, registerPartials } from "../src/utils/handlebars.js";
+import { generateFileset } from "../src/generators.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -93,22 +95,12 @@ Examples:
 
 	const config = await loadConfig(configPath);
 
-	// Import and run the main function
-	// Try dist imports first (production), then source imports (development)
-	const srcBase = existsSync(resolve(__dirname, "../dist/src"))
-		? "../dist/src"
-		: "../src";
-	const { registerHelpers, registerPartials } = await import(
-		`${srcBase}/utils/handlebars.js`
-	);
-	const { generateFileset } = await import(`${srcBase}/generators.js`);
-
 	// Register handlebars helpers and partials
 	registerHelpers();
-	// Try dist templates first (production), then source templates (development)
-	const templatesBase = existsSync(resolve(__dirname, "../dist/templates"))
-		? resolve(__dirname, "../dist/templates")
-		: resolve(__dirname, "../templates");
+	// Template paths - check dist first (production), then fall back to source (development)
+	const distTemplates = resolve(__dirname, "../dist/templates");
+	const srcTemplates = resolve(__dirname, "../templates");
+	const templatesBase = existsSync(distTemplates) ? distTemplates : srcTemplates;
 	registerPartials(resolve(templatesBase, "partials/internal"));
 	registerPartials(resolve(templatesBase, "partials"));
 

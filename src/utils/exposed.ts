@@ -33,23 +33,27 @@ export const renderTemplate = async (args: {
 	// Render the template with data
 	const renderedContent = compiledTemplate(args.data);
 
+	// Compile and render outputPath as a Handlebars template
+	const outputPathTemplate = Handlebars.compile(args.outputPath);
+	const renderedOutputPath = outputPathTemplate(args.data);
+
 	// Validate output path
-	if (!args.outputPath || args.outputPath.trim() === "") {
-		throw new Error(`Invalid output path: ${args.outputPath}`);
+	if (!renderedOutputPath || renderedOutputPath.trim() === "") {
+		throw new Error(`Invalid output path: ${renderedOutputPath}`);
 	}
 
 	// Ensure the output directory exists
-	const outputDir = path.dirname(args.outputPath);
+	const outputDir = path.dirname(renderedOutputPath);
 	try {
 		await fs.mkdir(outputDir, { recursive: true });
 	} catch (error) {
 		throw new Error(
-			`Invalid output path: ${args.outputPath} - ${error instanceof Error ? error.message : String(error)}`,
+			`Invalid output path: ${renderedOutputPath} - ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
 
 	// Write the output file
-	await fs.writeFile(args.outputPath, renderedContent, "utf8");
+	await fs.writeFile(renderedOutputPath, renderedContent, "utf8");
 };
 
 export const modifyFile = async (args: {
@@ -77,15 +81,19 @@ export const modifyFile = async (args: {
 	// Render the template with data
 	const renderedContent = compiledTemplate(args.data);
 
-	// Resolve the target file path
-	const resolvedPath = resolveFrom(args.targetFile);
+	// Compile and render targetFile as a Handlebars template
+	const targetFileTemplate = Handlebars.compile(args.targetFile);
+	const renderedTargetFile = targetFileTemplate(args.data);
+
+	// Resolve the rendered target file path
+	const resolvedPath = resolveFrom(renderedTargetFile);
 
 	// Check if target file exists
 	try {
 		await fs.access(resolvedPath);
 	} catch {
 		throw new Error(
-			`Target file not found: ${args.targetFile} (resolved to: ${resolvedPath})`,
+			`Target file not found: ${renderedTargetFile} (resolved to: ${resolvedPath})`,
 		);
 	}
 

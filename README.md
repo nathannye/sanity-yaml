@@ -142,14 +142,15 @@ const config: GeneratorConfig = {
         await renderTemplate({
           template: "./templates/schema.hbs",
           data: { name, sanityFields },
-          outputPath: `./generated/schemas/${name}.ts`,
+          outputPath: `./generated/schemas/{{kebabCase name}}.ts`,
         });
 
         // Generate JSX component file
+        // You can use Handlebars helpers in file paths!
         await renderTemplate({
           template: "./templates/component.hbs",
           data: { name, typeDefinition },
-          outputPath: `./generated/components/${name}.tsx`,
+          outputPath: `./generated/components/{{kebabCase name}}.tsx`,
         });
 
         // Add import to index file using import template 
@@ -393,6 +394,47 @@ Each template receives the following data:
 - `title` - Title case version of the name (e.g., "Hero Section")
 - `sanityFields` - Array of processed Sanity field definitions
 - `typeDefinition` - TypeScript type definitions as an object
+
+### onFileCreate Callback Arguments
+
+The `onFileCreate` callback receives an object with the following properties:
+
+- `name` - The schema name as a string (e.g., `"heroSection"`)
+- `sanityFields` - Array of processed Sanity field definitions
+- `typeDefinition` - TypeScript type definitions as an object
+- `renderTemplate` - Function to render a Handlebars template
+- `modifyFile` - Function to modify an existing file
+
+### Handlebars in File Paths
+
+Both `outputPath` (in `renderTemplate`) and `targetFile` (in `modifyFile`) support Handlebars template syntax, allowing you to use helpers like `{{pascalCase}}`, `{{kebabCase}}`, etc. directly in file paths.
+
+**Example:**
+```typescript
+onFileCreate: async ({ name, sanityFields, typeDefinition, renderTemplate }) => {
+  // Use Handlebars helpers in file paths
+  await renderTemplate({
+    template: "./templates/component.hbs",
+    data: { name, typeDefinition },
+    outputPath: `./src/components/{{kebabCase name}}.tsx`,
+    // Renders to: ./src/components/hero-section.tsx
+  });
+  
+  await renderTemplate({
+    template: "./templates/types.hbs",
+    data: { name, typeDefinition },
+    outputPath: `./src/types/{{pascalCase name}}.ts`,
+    // Renders to: ./src/types/HeroSection.ts
+  });
+  
+  await modifyFile({
+    template: "./templates/import.hbs",
+    data: { name },
+    targetFile: "./src/components/{{kebabCase name}}/index.ts",
+    // Renders to: ./src/components/hero-section/index.ts
+  });
+}
+```
 
 ## Handlebars Helpers
 

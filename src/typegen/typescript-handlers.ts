@@ -7,6 +7,7 @@ const TYPE_TRANSFORMERS: Record<
 	datetime: "string",
 	date: "string",
 	url: "string",
+	image: "any",
 	text: "string",
 	email: "string",
 	string: ({ options }) => {
