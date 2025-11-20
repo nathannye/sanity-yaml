@@ -181,7 +181,19 @@ const createSchema = (item: Record<string, unknown>) => {
 					node.parent.key.includes("[]")
 				)
 					return;
-				if (node.parent?.key && typeof node?.parent?.val === "object") return;
+				// Only skip nested fields that are children of object fields (not root-level fields)
+				// If the current field's value is an object, we want to process it as an object field
+				// If the current field's value is NOT an object but parent.val is an object, skip it (it's nested)
+				if (
+					node.parent?.key &&
+					typeof node?.parent?.val === "object" &&
+					!(
+						typeof node.val === "object" &&
+						node.val !== null &&
+						!Array.isArray(node.val)
+					)
+				)
+					return;
 
 				fields.push(field);
 			},

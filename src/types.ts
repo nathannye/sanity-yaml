@@ -36,7 +36,7 @@ export type TemplateData = {
 export type FieldHandlerParams = {
 	name: string;
 	type: string;
-	dataSignature: string;
+	dataSignature: string | Record<string, unknown>;
 	options: string;
 };
 

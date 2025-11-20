@@ -176,7 +176,11 @@ export const handleField = (
 	const formattedField = fn({
 		name: cleanedFieldName || name || "",
 		type: typeof _type === "string" ? _type : "string",
-		dataSignature: typeof dataSignature === "string" ? dataSignature : "",
+		dataSignature: typeof dataSignature === "string" 
+			? dataSignature 
+			: typeof dataSignature === "object" && dataSignature !== null && !Array.isArray(dataSignature)
+				? dataSignature as Record<string, unknown>
+				: "",
 		options: options ?? "",
 	}) as ProcessedGenericField | undefined;
 
