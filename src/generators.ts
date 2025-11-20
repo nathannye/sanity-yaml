@@ -174,26 +174,31 @@ const createSchema = (item: Record<string, unknown>) => {
 				const field = handleField(String(node.key), node.val);
 
 				if (field === undefined) return;
+
 				// Skip the below scenarios to avoid adding fields to the parent array that have already been resolved in place as children of objects and arrays
+				// Skip if parent is an array field (fieldName[])
 				if (
 					node.parent?.key &&
 					typeof node.parent.key === "string" &&
 					node.parent.key.includes("[]")
 				)
 					return;
+
 				// Only skip nested fields that are children of object fields (not root-level fields)
+				// Root-level fields have parent.key === undefined, so we check for that explicitly
 				// If the current field's value is an object, we want to process it as an object field
-				// If the current field's value is NOT an object but parent.val is an object, skip it (it's nested)
-				if (
-					node.parent?.key &&
-					typeof node?.parent?.val === "object" &&
+				// If the current field's value is NOT an object but parent.key exists (meaning it's nested), skip it
+				const isNestedField =
+					node.parent?.key !== undefined &&
+					typeof node.parent?.val === "object" &&
+					node.parent?.val !== null &&
 					!(
 						typeof node.val === "object" &&
 						node.val !== null &&
 						!Array.isArray(node.val)
-					)
-				)
-					return;
+					);
+
+				if (isNestedField) return;
 
 				fields.push(field);
 			},
@@ -213,7 +218,7 @@ const createType = (schema: FieldHandlerReturn[]) => {
 	const processedNestedFields = new Set<string>();
 
 	new WalkBuilder()
-		.withGlobalFilter((a) => !!a.key && a?.val?._PARAMS)
+		.withGlobalFilter((a) => a.key !== undefined && a?.val?._PARAMS)
 		.withSimpleCallback((node) => {
 			const val = node.val as WalkNodeValue;
 			const fieldName = val.name;
