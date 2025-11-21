@@ -1,6 +1,3 @@
-
-> 🚨 This library is under active development, breaking changes are to be expected while I figure out the best way to use this.
-
 # What is this
 A bulk Sanity.io schema and component generator. Write your schemas like this: 
 
