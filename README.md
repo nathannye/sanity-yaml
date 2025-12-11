@@ -271,8 +271,8 @@ arrayName:
 We re-use the native object syntax and keep the array `[]` modifier used on other fields, ex: `string[]`.
 ```yaml
 arrayName[]:
-  - field1: string
-  - field2: number
+  field1: string
+  field2: number
 ```
 
 **For arrays of simple types**, use the simpler syntax:
@@ -288,7 +288,7 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 
 | Sanity Field Type | Basic Syntax                        | Description                                   | Advanced Syntax Example                |
 |:------------------|:------------------------------------|:-----------------------------------------------|:---------------------------------------|
-| `array`           | `tags[]: string` or `items[]: -field: type` | Array of any field type                        | Simple: `tags[]: string`, Objects: `items[]: -field1: string -field2: number` |
+| `array`           | `tags[]: string` or `items[]:`<br/>`  field1: string`<br/>`  field2: number` | Array of any field type                        | Simple: `tags[]: string`, Objects: `items[]:`<br/>`  field1: string`<br/>`  field2: number` |
 | `boolean`         | `isActive: boolean`                 | `true`/`false` value                           |                                        |
 | `date`            | `eventDate: date`                   | ISO-format date string                         |                                        |
 | `datetime`        | `publishedDate: datetime`           | ISO-format date/time string                    |                                        |
@@ -297,7 +297,7 @@ The basic structure of schemas within YAML is key/value pairs. Keys are field na
 | `geopoint`        | `location: geopoint`                | Point with lat/lng/alt                         |                                        |
 | `image`           | `thumbnail: image`                  | Sanity image field                             |                                        |
 | `number`          | `count: number`                     | Numeric value (integer or float)               |                                        |
-| `object`          | `address: -street: string -city: string` | Nested fields as an object                   | Multiple fields: `address: -street: string -city: string -zip: number` |
+| `object`          | `address:`<br/>`  street: string`<br/>`  city: string` | Nested fields as an object                   | Multiple fields: `address:`<br/>`  street: string`<br/>`  city: string`<br/>`  zip: number` |
 | `reference`       | `author: ->author`                  | Reference (relation) to another document       | Single: `author: ->author`, Array: `categories[]: ->category`, Multiple types: `clothing[]: ->(shirts,pants)` |
 | `slug`            | `slug: slug`                        | Slug field automatically generated from a source | Use another field as source: `slug: slug(title)` |
 | `string`          | `name: string`                      | Plain text string                              | List options: `status: string(active, inactive)`  |
@@ -380,7 +380,9 @@ blogPost:
   categories[]: ->category
   content: text(10)
   featuredImage: image
-  metadata: -description: string -keywords: string[]
+  metadata:
+    description: string
+    keywords: string[]
 ```
 
 # How it works: Templates
